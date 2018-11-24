@@ -67,7 +67,6 @@ public class ServidorCliente extends Thread{
                             query += "where nombre = '" + servidor_caption + "';";
                             myDb.executeQuery(query, "rs1");
                             while (myDb.next("rs1")) {
-                                System.out.println()
                                 String respuesta = myDb.getString("existe", "rs1") + "";
                                 if (Integer.parseInt(respuesta) >= 1) {
                                     deServ(salida,"OK SERVER VERIFICATE");
@@ -232,7 +231,7 @@ public class ServidorCliente extends Thread{
                 case "EXIT":
                     /*------------------------------------------------------------------------*/
                     ingreso = accion;
-                    deServ(salida,"Finalisando conexion");
+                    deServ(salida,"Finalizando conexion");
                     myDb.close();
                     /*------------------------------------------------------------------------*/
                     break;

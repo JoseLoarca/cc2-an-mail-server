@@ -22,9 +22,7 @@ class Cliente{
 			}while(!leo.equals("EXIT")); //Mandamos el mensaje al servidor
 
 		}catch(Exception e){
-
 			System.out.println("No se puedo crear la conexion");
-			e.printStackTrace();
 		}
 	}
 
