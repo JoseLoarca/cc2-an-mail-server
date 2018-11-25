@@ -31,7 +31,6 @@ public class ServidorCliente extends Thread {
     }
 
     public void run() {
-        mute.acquireUninterruptibly();
         try {
             DataOutputStream salida = new DataOutputStream(this.cliente.getOutputStream());
             System.out.print("conectado al servidor, direccion: ");
@@ -379,6 +378,5 @@ public class ServidorCliente extends Thread {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        mute.release();
     }
 }
