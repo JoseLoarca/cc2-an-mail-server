@@ -11,12 +11,14 @@
 
 import java.net.*;
 import java.io.*;
+import java.util.concurrent.Semaphore;
 
 public class ServidorCliente extends Thread {
     Socket cliente = null;
     // InetAddress a = null;
     SocketAddress a = null;
     String ingreso = null;
+    private static Semaphore mute = new Semaphore(1,true);
 
     public ServidorCliente(Socket cliente) {
         this.cliente = cliente;
@@ -37,6 +39,7 @@ public class ServidorCliente extends Thread {
     }
 
     public void run() {
+        mute.acquireUninterruptibly();
         try {
             DataOutputStream salida = new DataOutputStream(this.cliente.getOutputStream());
             System.out.print("conectado al servidor, direccion: ");
@@ -262,5 +265,6 @@ public class ServidorCliente extends Thread {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        mute.release();
     }
 }
