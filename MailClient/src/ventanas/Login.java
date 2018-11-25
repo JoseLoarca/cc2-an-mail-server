@@ -148,33 +148,37 @@ public class Login extends javax.swing.JFrame {
                 conexion = new Socket(ip,PUERTO);
                 DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
                 DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
+                
+                if (verifyUserServer(flujoDatosEntrada, flujoDatosSalida, user, "yimail")) {
+                    leo = ("LOGIN" + " " + user +" "+ password);
+                    flujoDatosSalida.writeUTF(leo); 
+                    String response = flujoDatosEntrada.readUTF();
 
-                leo = ("LOGIN" + " " + user +" "+ password);
-                flujoDatosSalida.writeUTF(leo); 
-                String response = flujoDatosEntrada.readUTF();
-                
-                switch(response) {
-                    case "SERVER : OK LOGIN":
-                        Interfaz menu = new Interfaz();
-                        menu.setUsername(user);
-                        menu.setUserId(user, password, flujoDatosEntrada, flujoDatosSalida);
-                        menu.setVisible(true);
-                        this.setVisible(false);
-                        break;
-                    case "SERVER : LOGIN ERROR 102":
-                        JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                        conexion.close();
-                        break;
-                    case "SERVER : LOGIN ERROR 101":
-                        JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                        conexion.close();
-                        break;
-                    default:
-                        JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                        conexion.close();
-                        break;
+                    switch(response) {
+                        case "SERVER : OK LOGIN":
+                            Interfaz menu = new Interfaz();
+                            menu.setUsername(user);
+                            menu.setUserId(user, password, flujoDatosEntrada, flujoDatosSalida);
+                            menu.setVisible(true);
+                            this.setVisible(false);
+                            break;
+                        case "SERVER : LOGIN ERROR 102":
+                            JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                            conexion.close();
+                            break;
+                        case "SERVER : LOGIN ERROR 101":
+                            JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                            conexion.close();
+                            break;
+                        default:
+                            JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                            conexion.close();
+                            break;
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "El usuario ingresado no existe en el servidor.", "Error", JOptionPane.ERROR_MESSAGE);
+                    conexion.close();
                 }
-                
             }catch(Exception e){
                 try {
                     conexion.close();
@@ -186,6 +190,49 @@ public class Login extends javax.swing.JFrame {
        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    /**
+     *
+     * @param flujoDatosEntrada
+     * @param flujoDatosSalida
+     * @param user
+     * @param server
+     * @return
+     */
+    public boolean verifyUserServer(DataInputStream flujoDatosEntrada, DataOutputStream flujoDatosSalida, String user, String server) {
+        boolean verify = false;
+        
+        String reqStr = ("VERIFYUSRSERVER " + user + " " + server);
+        
+        System.out.println("Enviar: " + reqStr);
+        
+        try {
+            flujoDatosSalida.writeUTF(reqStr);
+            
+            String response = flujoDatosEntrada.readUTF();
+            
+            System.out.println("Respuesta: " + response);
+            
+            switch(response) {
+                case "SERVER : OK SERVER VERIFICATE": 
+                    verify = true;
+                    break;
+                default:
+                    break;
+            }
+            
+            return verify;
+            
+        } catch (IOException ex) {
+            System.out.println("Ocurrio un error al enviar los datos: " + ex);
+        }
+        
+        return verify;
+    }
+    
+    public void disableLoginButton() {
+        jButton2.setEnabled(false);
+    }
+    
     /**
      * @param args the command line arguments
      */

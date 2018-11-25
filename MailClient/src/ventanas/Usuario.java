@@ -141,9 +141,6 @@ public class Usuario extends javax.swing.JFrame {
 
                 switch(splitResponse[2]) {
                     case "OK":
-                        Contactos contacts = new Contactos();
-                        contacts.setInfo(flujoDatosEntrada, flujoDatosSalida, "4");
-                        contacts.setVisible(true);
                         this.setVisible(false);
                         break;
                     case "NEWCONT":
