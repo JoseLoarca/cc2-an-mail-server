@@ -274,9 +274,9 @@ public class ServidorCliente extends Thread {
                                     query2 += " password = '" + password_caption_id + "';";
                                     myDb.executeQuery(query2, "rsl_data");
                                     while (myDb.next("rsl_data")) {
-                                        String result_1 = myDb.getString("idusuario", "rsl_data");
+                                        String result_1 = "" + myDb.getString("idusuario", "rsl_data");
                                         deServ(salida, result_1);
-                                        String result_2 = myDb.getString("nombre", "rsl_data");
+                                        String result_2 = "" + myDb.getString("nombre", "rsl_data");
                                         deServ(salida, result_2);
                                     }
                                 } else {
