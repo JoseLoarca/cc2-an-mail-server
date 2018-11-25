@@ -17,6 +17,10 @@ public class Interfaz extends javax.swing.JFrame {
     public Interfaz() {
         initComponents();
     }
+    
+    public void setUsername(String username){
+        NombreUser.setText(username);
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.

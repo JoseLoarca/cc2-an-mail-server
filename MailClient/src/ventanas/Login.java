@@ -160,7 +160,7 @@ public class Login extends javax.swing.JFrame {
                         switch(response) {
                             case "SERVER : OK LOGIN":
                                     Interfaz menu = new Interfaz();
-                                    menu.username = 'loarca';
+                                    menu.setUsername(user);
                                     menu.setVisible(true);
                                     this.setVisible(false);
                                 break;
