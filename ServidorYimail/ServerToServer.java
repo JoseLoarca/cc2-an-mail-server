@@ -4,7 +4,8 @@ import java.io.*;
 public class ServerToServer extends Thread {
 
 	public String verifyCount(String count){
-		return checkContact(count);
+		DNSes sn = new DNSes();
+		return sn.checkContact(count);
 	}
 
 	public void run() {

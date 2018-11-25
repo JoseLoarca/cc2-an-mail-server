@@ -2,7 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
-import java.util.Scanner;
+import java.util.*;
 
 public class ServidorCliente extends Thread {
     Socket cliente = null;
@@ -11,7 +11,9 @@ public class ServidorCliente extends Thread {
     String ingreso = null;
     String usuario_actual = null;
     String id_usuario_actual = null;
-
+    Timer timer = new Timer();
+    int contNoop = 0;
+    boolean estado = false;
     public ServidorCliente(Socket cliente) {
         this.cliente = cliente;
         try {
@@ -30,6 +32,46 @@ public class ServidorCliente extends Thread {
             System.out.println(e.getMessage());
         }
     }
+
+    TimerTask timerTask = new TimerTask(){ 
+        public void run()  
+        { 
+            try{
+                DB myDb2 = new DB("servidorcorreo.db");
+                boolean respuestanop = false; 
+                if (contNoop>20) {
+                    try{
+                        if (!myDb2.connect()) {
+                            System.out.println("ERROR DB CONNECT");
+                        }else{
+                            String queryNop = "update usuario set estado='0' where correo='"
+                                            + usuario_actual + "';";
+                            respuestanop = myDb2.executeNonQuery(queryNop);
+                            if (respuestanop) {
+                                System.out.print("OFFLINE CONNECT CLIENT: ");
+                                System.out.println(cliente);
+                                Thread.currentThread().stop();
+                            }else{
+                                System.out.println("INVALID OFFLINE");
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        System.out.println("NOOP ERROR UNKNOWN");
+                    } finally {
+                        myDb2.close();
+                    }
+                }else{
+                    contNoop++;
+                    System.out.println("entre en el contador");
+                    System.out.println(contNoop);
+                }
+            }catch (Exception e) {
+                System.out.println("Ocurrio un error inesperado");
+                System.out.println(e.getMessage());
+            }
+        } 
+    }; 
 
     public void run() {
         try {
@@ -435,6 +477,18 @@ public class ServidorCliente extends Thread {
                         deServ(salida, "INVALID COMMAND ERROR");
                     }
                     break;
+                case "NOOP":
+                    if (!estado) {
+                        timer.scheduleAtFixedRate(timerTask, 0, 1000);
+                        estado = true;
+                        deServ(salida, "OK NOOP");
+                    }else{
+                        if (contNoop<=20) {
+                            contNoop = 0;
+                            deServ(salida, "OK NOOP");
+                        }
+                    }
+                break;
                 case "EXIT":
                     /*------------------------------------------------------------------------*/
                     ingreso = accion;
