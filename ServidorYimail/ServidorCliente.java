@@ -14,6 +14,7 @@ public class ServidorCliente extends Thread {
     Timer timer = new Timer();
     int contNoop = 0;
     boolean estado = false;
+
     public ServidorCliente(Socket cliente) {
         this.cliente = cliente;
         try {
@@ -33,25 +34,23 @@ public class ServidorCliente extends Thread {
         }
     }
 
-    TimerTask timerTask = new TimerTask(){ 
-        public void run()  
-        { 
-            try{
+    TimerTask timerTask = new TimerTask() {
+        public void run() {
+            try {
                 DB myDb2 = new DB("servidorcorreo.db");
-                boolean respuestanop = false; 
-                if (contNoop>20) {
-                    try{
+                boolean respuestanop = false;
+                if (contNoop > 20) {
+                    try {
                         if (!myDb2.connect()) {
                             System.out.println("ERROR DB CONNECT");
-                        }else{
-                            String queryNop = "update usuario set estado='0' where correo='"
-                                            + usuario_actual + "';";
+                        } else {
+                            String queryNop = "update usuario set estado='0' where correo='" + usuario_actual + "';";
                             respuestanop = myDb2.executeNonQuery(queryNop);
                             if (respuestanop) {
                                 System.out.print("OFFLINE CONNECT CLIENT: ");
                                 System.out.println(cliente);
                                 Thread.currentThread().stop();
-                            }else{
+                            } else {
                                 System.out.println("INVALID OFFLINE");
                             }
                         }
@@ -61,17 +60,15 @@ public class ServidorCliente extends Thread {
                     } finally {
                         myDb2.close();
                     }
-                }else{
+                } else {
                     contNoop++;
-                    System.out.println("entre en el contador");
-                    System.out.println(contNoop);
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println("Ocurrio un error inesperado");
                 System.out.println(e.getMessage());
             }
-        } 
-    }; 
+        }
+    };
 
     public void run() {
         try {
@@ -568,7 +565,7 @@ public class ServidorCliente extends Thread {
                                 if (valores_segunda_cadena[0].trim().equals("MAIL")
                                         && valores_segunda_cadena[1].trim().equals("TO")) {
                                     // String[] correo_local = valores_segunda_cadena[2].split("@");
-                                    usuarios_destinatarios += valores_segunda_cadena[2] + "|";
+                                    usuarios_destinatarios += valores_segunda_cadena[2] + "-";
                                 } else {
                                     auxiliar_bandera = false;
                                     deServ(salida, "SEND ERROR 106");
@@ -577,41 +574,42 @@ public class ServidorCliente extends Thread {
                                     String send_instrunction_23 = entrada.readUTF();
                                     System.out.println("CLIENT : " + send_instrunction_23);
                                     String[] valores_tercera_cadena2 = send_instrunction_23.split(" ");
-                                    if (valores_tercera_cadena2.length == 4) {
-                                        if (valores_tercera_cadena2[0].trim().equals("MAIL")
-                                                && valores_tercera_cadena2[1].trim().equals("TO")
-                                                && valores_tercera_cadena2[3].equals("*")) {
-                                            usuarios_destinatarios += valores_tercera_cadena2[2] + "|";
-                                            auxiliar_bandera = false;
-                                        }
-                                    } else if (valores_tercera_cadena2.length == 3) {
-                                        if (valores_tercera_cadena2[0].trim().equals("MAIL")
-                                                && valores_tercera_cadena2[1].trim().equals("TO")) {
-                                            usuarios_destinatarios += valores_tercera_cadena2[2] + "|";
-                                        }
+                                    if (valores_tercera_cadena2.length == 4
+                                            && valores_tercera_cadena2[0].trim().equals("MAIL")
+                                            && valores_tercera_cadena2[1].trim().equals("TO")
+                                            && valores_tercera_cadena2[3].equals("*")) {
+                                        usuarios_destinatarios += valores_tercera_cadena2[2] + "-";
+                                    } else if (valores_tercera_cadena2.length == 3
+                                            && valores_tercera_cadena2[0].trim().equals("MAIL")
+                                            && valores_tercera_cadena2[1].trim().equals("TO")) {
+                                        usuarios_destinatarios += valores_tercera_cadena2[2] + "-";
                                     } else {
                                         auxiliar_bandera = false;
-
                                         if (usuarios_destinatarios != "") {
-                                            String[] destinatarios = usuarios_destinatarios.split("|");
-                                            for (int i = 0; i < destinatarios.length; i++) {
-                                                String user_server_dest = destinatarios[i];
-                                                String[] correo_local2 = user_server_dest.split("@");
-                                                if (correo_local2[1].equals("yimail")) {
-                                                    if (valores_tercera_cadena2[0].trim().equals("MAIL")
-                                                            && valores_tercera_cadena2[1].trim().equals("SUBJECT")) {
-                                                        String send_instruction_31 = entrada.readUTF();
-                                                        System.out.println("CLIENT : " + send_instruction_31);
-                                                        String[] valores_cuarta_cadena2 = send_instruction_31.split(" ");
-                                                        if (valores_cuarta_cadena2[0].trim().equals("MAIL")
-                                                                && valores_cuarta_cadena2[1].trim().equals("BODY")) {
-                                                            String sed_instruction_41 = entrada.readUTF();
-                                                            System.out.println("CLIENT : " + sed_instruction_41);
-                                                            String[] valore_quita_cadena2 = sed_instruction_41.split(" ");
-                                                            if (valore_quita_cadena2.length == 3) {
-                                                                if (valore_quita_cadena2[0].trim().equals("END")
-                                                                        && valore_quita_cadena2[1].trim().equals("SEND")
-                                                                        && valore_quita_cadena2[2].trim().equals("MAIL")) {
+                                            String[] destinatarios = usuarios_destinatarios.split("-");
+                                            if (valores_tercera_cadena2[0].trim().equals("MAIL")
+                                                    && valores_tercera_cadena2[1].trim().equals("SUBJECT")) {
+                                                String send_instruction_31 = entrada.readUTF();
+                                                System.out.println("CLIENT : " + send_instruction_31);
+                                                String[] valores_cuarta_cadena2 = send_instruction_31.split(" ");
+                                                if (valores_cuarta_cadena2[0].trim().equals("MAIL")
+                                                        && valores_cuarta_cadena2[1].trim().equals("BODY")) {
+                                                    String sed_instruction_41 = entrada.readUTF();
+                                                    System.out.println("CLIENT : " + sed_instruction_41);
+                                                    String[] valore_quita_cadena2 = sed_instruction_41.split(" ");
+                                                    if (valore_quita_cadena2.length == 3) {
+                                                        if (valore_quita_cadena2[0].trim().equals("END")
+                                                                && valore_quita_cadena2[1].trim().equals("SEND")
+                                                                && valore_quita_cadena2[2].trim().equals("MAIL")) {
+
+                                                            int contador_success = 0;
+                                                            
+                                                            for (int i = 0; i < destinatarios.length; i++) {
+                                                                String user_server_dest = destinatarios[i];
+                                                                System.out.println("llegue aqui con user_server: "
+                                                                        + user_server_dest);
+                                                                String[] correo_local2 = user_server_dest.split("@");
+                                                                if (correo_local2[1].equals("yimail")) {
 
                                                                     if (!myDb.connect()) {
                                                                         deServ(salida, "ERROR_DB_CONECTIONS");
@@ -642,13 +640,15 @@ public class ServidorCliente extends Thread {
                                                                             }
 
                                                                             String query_insert_correo2 = "insert into correo (idcorreo,asunto,cuerpo,idusuarioremitente,idservidor)";
-                                                                            query_insert_correo2 += "values('" + maximo_2
-                                                                                    + "','" + cadena_asunto_2.trim()
-                                                                                    + "','" + cadena_cuerpo2.trim()
-                                                                                    + "','" + id_usuario_actual
-                                                                                    + "','1');";
+                                                                            query_insert_correo2 += "values('"
+                                                                                    + maximo_2 + "','"
+                                                                                    + cadena_asunto_2.trim() + "','"
+                                                                                    + cadena_cuerpo2.trim() + "','"
+                                                                                    + id_usuario_actual + "','1');";
 
-                                                                            boolean respuesta_insert_correo2 = myDb.executeNonQuery(query_insert_correo2);
+                                                                            boolean respuesta_insert_correo2 = myDb
+                                                                                    .executeNonQuery(
+                                                                                            query_insert_correo2);
 
                                                                             String query_string_21 = "select idusuario from usuario where lower(correo) = '"
                                                                                     + correo_local2[0].trim() + "';";
@@ -663,13 +663,16 @@ public class ServidorCliente extends Thread {
 
                                                                             String query_insert_destinatario2 = "insert into destinatario (idusuarioreceptor,idcorreo)";
                                                                             query_insert_destinatario2 += "values("
-                                                                                    + id_contacto2 + "," + maximo_2 + ");";
+                                                                                    + id_contacto2 + "," + maximo_2
+                                                                                    + ");";
 
-                                                                            boolean respuesta_insert_destinatario2 = myDb.executeNonQuery(query_insert_destinatario2);
+                                                                            boolean respuesta_insert_destinatario2 = myDb
+                                                                                    .executeNonQuery(
+                                                                                            query_insert_destinatario2);
 
                                                                             if (respuesta_insert_correo2
                                                                                     && respuesta_insert_destinatario2) {
-                                                                                deServ(salida, "OK SEND MAIL");
+                                                                                        contador_success++;
                                                                             }
 
                                                                         } catch (Exception e) {
@@ -679,24 +682,28 @@ public class ServidorCliente extends Thread {
                                                                             myDb.close();
                                                                         }
                                                                     }
+
+                                                                } else {
+                                                                    // enviar correo a servidor externo
                                                                 }
-                                                            } else {
-                                                                deServ(salida, "INVALID COMMAND ERROR");
                                                             }
-                                                        } else {
-                                                            deServ(salida, "SEND ERROR 108");
+
+                                                            if (contador_success == destinatarios.length){                                                                
+                                                                deServ(salida, "OK SEND MAIL");
+                                                            }
                                                         }
                                                     } else {
-                                                        deServ(salida, "SEND ERROR 107");
+                                                        deServ(salida, "INVALID COMMAND ERROR");
                                                     }
                                                 } else {
-                                                    // enviar correo a servidor externo
+                                                    deServ(salida, "SEND ERROR 108");
                                                 }
+                                            } else {
+                                                deServ(salida, "SEND ERROR 107");
                                             }
                                         }
                                     }
                                 }
-
                             }
                         } else {
                             deServ(salida, "INVALID COMMAND ERROR");
@@ -710,13 +717,13 @@ public class ServidorCliente extends Thread {
                         timer.scheduleAtFixedRate(timerTask, 0, 1000);
                         estado = true;
                         deServ(salida, "OK NOOP");
-                    }else{
-                        if (contNoop<=20) {
+                    } else {
+                        if (contNoop <= 20) {
                             contNoop = 0;
                             deServ(salida, "OK NOOP");
                         }
                     }
-                break;
+                    break;
                 case "EXIT":
                     /*------------------------------------------------------------------------*/
                     ingreso = accion;
