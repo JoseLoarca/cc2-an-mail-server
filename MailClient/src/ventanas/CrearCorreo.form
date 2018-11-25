@@ -80,7 +80,7 @@
     </Container>
     <Component class="javax.swing.JButton" name="jButton1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Editar"/>
+        <Property name="text" type="java.lang.String" value="A&#xf1;adir"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
       </Properties>
       <Events>

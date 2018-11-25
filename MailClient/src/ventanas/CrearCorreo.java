@@ -8,6 +8,7 @@ package ventanas;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -33,8 +34,6 @@ public class CrearCorreo extends javax.swing.JFrame {
         flujoDatosEntrada = DatosEntrada;
         flujoDatosSalida = DatosSalida;
         userId = id;
-
-
     }
     
 
@@ -85,7 +84,7 @@ public class CrearCorreo extends javax.swing.JFrame {
 
         getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 80, -1, 70));
 
-        jButton1.setText("Editar");
+        jButton1.setText("Añadir");
         jButton1.setToolTipText("");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -130,36 +129,102 @@ public class CrearCorreo extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        destinatarios.add(jTextField3.getText());
-        if(contador == 0){
-        modelo = new DefaultTableModel();
-        modelo.addColumn("Destinatarios");
-        jTable1.setModel(modelo);
-        }
-        modelo.addRow(new Object[]{jTextField3.getText()});
-        contador = contador +1;        
+        
+        String leo;
+           String recibo;
+           String aux;
+           String username;
+           String server;
+        		try{
+                        aux = jTextField3.getText();
+                        String[] parts = aux.split("@");
+                        username= parts[0];
+                        server = parts[1];
+                        System.out.println("llego al try:   "+ flujoDatosEntrada );
+                        leo = ("VERIFYUSRSERVER" +" "+ username +" "+ server);
+                        System.out.println("lo que se metio en leo: "+ leo);
+                        flujoDatosSalida.writeUTF(leo);
+                        recibo = flujoDatosEntrada.readUTF();
+                        System.out.println(recibo); 
+                        switch(recibo) {
+                    case "SERVER : OK SERVER VERIFICATE":
+                          destinatarios.add(jTextField3.getText());
+                           if(contador == 0){
+                           modelo = new DefaultTableModel();
+                           modelo.addColumn("Destinatarios");
+                          jTable1.setModel(modelo);
+                           }
+                              modelo.addRow(new Object[]{jTextField3.getText()});
+                              contador = contador +1;
+                        break;
+                    case "SERVER : LOGIN ERROR 102":
+                        JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                       // conexion.close();
+                        break;
+                    case "SERVER : LOGIN ERROR 101":
+                        JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                       // conexion.close();
+                        break;
+                    default:
+                        JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                       // conexion.close();
+                        break;
+                }
+                        }catch(Exception e){
+			System.out.println("Excepcion producida :c   "+ e);
+		}
+        
     }//GEN-LAST:event_jButton1ActionPerformed
 
+        private boolean validFields() {
+        if (jTextField1.getText().isEmpty() || jTextField2.getText().isEmpty() ||
+                jTextField1.getText().trim().equals("") || jTextField2.getText().trim().equals("") || destinatarios.isEmpty()) {
+            return false;
+        }
+        
+        return true;
+    }
+    
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
-        String leo = "SEND EMAIL";
+
+        String recibo;
+        		try{
+
+                        if(validFields()){
+            String leo = "SEND MAIL";
         System.out.println(leo);
+        flujoDatosSalida.writeUTF(leo); 
         for(int x=0;x<destinatarios.size();x++) {
             if(x == destinatarios.size()-1){
-                leo = "MAIL TO "+destinatarios.get(x)+"*";
+                leo = "MAIL TO "+destinatarios.get(x)+" *";
                 System.out.println(leo);
+                flujoDatosSalida.writeUTF(leo); 
             }else{
                 leo = "MAIL TO "+destinatarios.get(x);
                 System.out.println(leo);
+                flujoDatosSalida.writeUTF(leo); 
             }
         }
         leo = "MAIL SUBJECT "+jTextField1.getText();
         System.out.println(leo);
+        flujoDatosSalida.writeUTF(leo); 
         leo = "MAIL BODY "+jTextField2.getText();
         System.out.println(leo);
+        flujoDatosSalida.writeUTF(leo); 
         leo = "END SEND MAIL";
         System.out.println(leo);
+        flujoDatosSalida.writeUTF(leo); 
+        recibo = flujoDatosEntrada.readUTF();
+        System.out.println(recibo);
+        } else{
+            JOptionPane.showMessageDialog(null, "No lleno todos los campos...", "Error", JOptionPane.ERROR_MESSAGE);
+        }  
+		}catch(Exception e){
+			System.out.println("Excepcion producida :c   "+ e);
+		}
+             
+        
         
     }//GEN-LAST:event_jButton2ActionPerformed
 
