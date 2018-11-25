@@ -340,6 +340,7 @@ public class ServidorCliente extends Thread {
                                         respuesta_3 = myDb.getString("existe", "rsl_existe") + "";
                                     }
                                     if (Integer.parseInt(respuesta_3) > 0) {
+                                        String query_string_2 = "";
                                         deServ(salida, "OK NEWCONT " + correo_caption);
                                     } else {
                                         deServ(salida, "NEWCONT ERROR 109 " + correo_caption);
