@@ -1,17 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author Jair
- */
-
 import java.net.*;
 import java.io.*;
 import java.util.concurrent.Semaphore;
+import java.util.regex.Pattern;
+import java.util.Scanner;
 
 public class ServidorCliente extends Thread {
     Socket cliente = null;
@@ -19,6 +10,7 @@ public class ServidorCliente extends Thread {
     SocketAddress a = null;
     String ingreso = null;
     private static Semaphore mute = new Semaphore(1, true);
+    String usuario_actual = null;
 
     public ServidorCliente(Socket cliente) {
         this.cliente = cliente;
@@ -58,6 +50,7 @@ public class ServidorCliente extends Thread {
                     String servidor_caption = "";
                     if (valores.length == 3) {
                         user_caption = valores[1].trim();
+                        usuario_actual = valores[1].trim();
                         servidor_caption = valores[2].trim();
                         if (!myDb.connect()) {
                             deServ(salida, "ERROR_DB_CONECTIONS");
@@ -321,7 +314,44 @@ public class ServidorCliente extends Thread {
                                 myDb.close();
                             }
                         }
-                        
+
+                    } else {
+                        deServ(salida, "FAIL PARAMS");
+                    }
+                    /*------------------------------------------------------------------------*/
+                    break;
+                case "NEWCONT":
+                    /*------------------------------------------------------------------------*/
+                    String correo_caption = "";
+                    if (valores.length == 2){
+                        correo_caption = valores[1].trim();
+                        if (!myDb.connect()){
+                            deServ(salida, "ERROR_DB_CONECTIONS");
+                        } else {
+                            try {
+                                String[] parts = correo_caption.split("@");
+                                if (parts[1].equals("yimail")){
+                                    String query_string = "select count(*) as existe from usuario";
+                                    query_string += " where correo = '" + parts[0] + "';";
+                                    myDb.executeQuery(query_string, "rsl_existe");
+                                    String respuesta_3 = "";
+                                    while (myDb.next("rsl_existe")) {
+                                        respuesta_3 = myDb.getString("existe", "rsl_existe") + "";
+                                    }
+
+                                    if (Integer.parseInt(respuesta_3) > 0) {
+                                        deServ(salida, "OK NEWCONT " + correo_caption);
+                                    } else {
+                                        deServ(salida, "NEWCONT ERROR 109 " + correo_caption);
+                                    }
+                                } 
+                            } catch (Exception e) {
+                                System.out.println(e.getMessage());
+                                deServ(salida, "NEWCONT ERROR UNKNOWN");
+                            } finally {
+                                myDb.close();
+                            }
+                        }
                     } else {
                         deServ(salida, "FAIL PARAMS");
                     }
