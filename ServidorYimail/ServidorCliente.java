@@ -9,7 +9,7 @@ public class ServidorCliente extends Thread {
     // InetAddress a = null;
     SocketAddress a = null;
     String ingreso = null;
-    private static Semaphore mute = new Semaphore(1, true);
+   // private static Semaphore mute = new Semaphore(1, true);
     String usuario_actual = null;
 
     public ServidorCliente(Socket cliente) {
@@ -31,7 +31,7 @@ public class ServidorCliente extends Thread {
     }
 
     public void run() {
-        mute.acquireUninterruptibly();
+      //  mute.acquireUninterruptibly();
         try {
             DataOutputStream salida = new DataOutputStream(this.cliente.getOutputStream());
             System.out.print("conectado al servidor, direccion: ");
@@ -74,7 +74,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "FAIL PARAMS");
+                        deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -131,7 +131,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "FAIL PARAMS");
+                        deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -156,7 +156,7 @@ public class ServidorCliente extends Thread {
                                 if (Integer.parseInt(respuesta_3) > 0) {
                                     String query2 = "select usuario.correo as user_correo, servidor.nombre as nombre_server  from contacto ";
                                     query2 += "inner join usuario, servidor";
-                                    query2 += "on contacto.idusuariocontacto = usuario.idusuario ";
+                                    query2 += " on contacto.idusuariocontacto = usuario.idusuario ";
                                     query2 += "and contacto.idservidor = servidor.idservidor ";
                                     query2 += "and contacto.idusuariopersonal = '" + user_caption_log_list + "';";
                                     myDb.executeQuery(query2, "rsl_contactos");
@@ -182,7 +182,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "FAIL PARAMS");
+                        deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -198,38 +198,39 @@ public class ServidorCliente extends Thread {
                                 String query = "select count(*) as cantidad_correos from correo ";
                                 query += "where idusuarioremitente = '" + user_caption_log_mails + "';";
                                 myDb.executeQuery(query, "rsl_cantidad");
+                                String respuesta_3 = "";
                                 while (myDb.next("rsl_cantidad")) {
-                                    String respuesta_3 = myDb.getString("cantidad_correos", "rsl_cantidad") + "";
-                                    if (Integer.parseInt(respuesta_3) > 0) {
-                                        String query2 = "select usuario.correo || '@' || servidor.nombre as sender, correo.asunto as asunto, correo.cuerpo as cuerpo";
-                                        query2 += "from correo";
-                                        query2 += "inner join destinatario, servidor, usuario";
-                                        query2 += "on correo.idcorreo = destinatario.idcorreo ";
-                                        query2 += "and correo.idservidor = servidor.idservidor ";
-                                        query2 += "and correo.idusuarioremitente = usuario.idusuario";
-                                        query2 += "and destinatario.idusuarioreceptor = '" + user_caption_log_mails
-                                                + "';";
-                                        myDb.executeQuery(query2, "rsl_newmails");
-                                        Integer cont_aux = 1;
-                                        while (myDb.next("rsl_newmails")) {
-                                            if (cont_aux.equals(Integer.parseInt(respuesta_3))) {
-                                                deServ(salida,
-                                                        "OK GETNEWMAILS " + myDb.getString("sender", "rsl_newmails")
-                                                                + " '" + myDb.getString("asunto", "rsl_newmails")
-                                                                + "' '" + myDb.getString("cuerpo", "rsl_newmails")
-                                                                + "' *");
-                                            } else {
-                                                deServ(salida,
-                                                        "OK GETNEWMAILS " + myDb.getString("sender", "rsl_newmails")
-                                                                + " '" + myDb.getString("asunto", "rsl_newmails")
-                                                                + "' '" + myDb.getString("cuerpo", "rsl_newmails")
-                                                                + "'");
-                                            }
-                                            cont_aux++;
+                                    respuesta_3 = myDb.getString("cantidad_correos", "rsl_cantidad") + "";
+                                }
+                                if (Integer.parseInt(respuesta_3) > 0) {
+                                    String query2 = "select usuario.correo || '@' || servidor.nombre as sender, correo.asunto as asunto, correo.cuerpo as cuerpo";
+                                    query2 += " from correo";
+                                    query2 += " inner join destinatario, servidor, usuario";
+                                    query2 += " on correo.idcorreo = destinatario.idcorreo";
+                                    query2 += " and correo.idservidor = servidor.idservidor";
+                                    query2 += " and correo.idusuarioremitente = usuario.idusuario";
+                                    query2 += " and destinatario.idusuarioreceptor = '" + user_caption_log_mails
+                                            + "';";
+                                    myDb.executeQuery(query2, "rsl_newmails");
+                                    Integer cont_aux = 1;
+                                    while (myDb.next("rsl_newmails")) {
+                                        if (cont_aux.equals(Integer.parseInt(respuesta_3))) {
+                                            deServ(salida,
+                                                    "OK GETNEWMAILS " + myDb.getString("sender", "rsl_newmails")
+                                                            + " '" + myDb.getString("asunto", "rsl_newmails")
+                                                            + "' '" + myDb.getString("cuerpo", "rsl_newmails")
+                                                            + "' *");
+                                        } else {
+                                            deServ(salida,
+                                                    "OK GETNEWMAILS " + myDb.getString("sender", "rsl_newmails")
+                                                            + " '" + myDb.getString("asunto", "rsl_newmails")
+                                                            + "' '" + myDb.getString("cuerpo", "rsl_newmails")
+                                                            + "'");
                                         }
-                                    } else {
-                                        deServ(salida, "OK GETNEWMAILS NOMAILS");
+                                        cont_aux++;
                                     }
+                                } else {
+                                    deServ(salida, "OK GETNEWMAILS NOMAILS");
                                 }
                             } catch (Exception e) {
                                 System.out.println(e.getMessage());
@@ -239,7 +240,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "FAIL PARAMS");
+                        deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -285,7 +286,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "FAIL PARAMS");
+                        deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -316,21 +317,21 @@ public class ServidorCliente extends Thread {
                         }
 
                     } else {
-                        deServ(salida, "FAIL PARAMS");
+                        deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
                 case "NEWCONT":
                     /*------------------------------------------------------------------------*/
                     String correo_caption = "";
-                    if (valores.length == 2){
+                    if (valores.length == 2) {
                         correo_caption = valores[1].trim();
-                        if (!myDb.connect()){
+                        if (!myDb.connect()) {
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
                                 String[] parts = correo_caption.split("@");
-                                if (parts[1].equals("yimail")){
+                                if (parts[1].equals("yimail")) {
                                     String query_string = "select count(*) as existe from usuario";
                                     query_string += " where correo = '" + parts[0] + "';";
                                     myDb.executeQuery(query_string, "rsl_existe");
@@ -338,13 +339,14 @@ public class ServidorCliente extends Thread {
                                     while (myDb.next("rsl_existe")) {
                                         respuesta_3 = myDb.getString("existe", "rsl_existe") + "";
                                     }
-
                                     if (Integer.parseInt(respuesta_3) > 0) {
                                         deServ(salida, "OK NEWCONT " + correo_caption);
                                     } else {
                                         deServ(salida, "NEWCONT ERROR 109 " + correo_caption);
                                     }
-                                } 
+                                } else {
+                                    
+                                }
                             } catch (Exception e) {
                                 System.out.println(e.getMessage());
                                 deServ(salida, "NEWCONT ERROR UNKNOWN");
@@ -353,7 +355,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "FAIL PARAMS");
+                        deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -365,7 +367,7 @@ public class ServidorCliente extends Thread {
                     /*------------------------------------------------------------------------*/
                     break;
                 default:
-                    deServ(salida, "FAIL COMAND");
+                    deServ(salida, "INVALID COMMAND ERROR");
                     break;
                 }
             } while (!ingreso.equals("EXIT"));
@@ -379,6 +381,6 @@ public class ServidorCliente extends Thread {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        mute.release();
+      //  mute.release();
     }
 }
