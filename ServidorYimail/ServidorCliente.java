@@ -99,7 +99,7 @@ public class ServidorCliente extends Thread {
                             try {
                                 String query = "select count(*) as existe from usuario ";
                                 query += "where correo = '" + user_caption_log + "' and ";
-                                query2 += "password = '" + pasword_caption_log + "';";
+                                query += "password = '" + pasword_caption_log + "';";
                                 myDb.executeQuery(query, "rs1");
                                 String respuesta = "";
                                 while (myDb.next("rs1")) {
