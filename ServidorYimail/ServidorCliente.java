@@ -78,7 +78,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "Parametros enviados incorrectos");
+                        deServ(salida, "FAIL PARAMS");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -95,7 +95,8 @@ public class ServidorCliente extends Thread {
                         } else {
                             try {
                                 String query = "select count(*) as existe from usuario ";
-                                query += "where correo = '" + user_caption_log + "';";
+                                query += "where correo = '" + user_caption_log + "' and ";
+                                query2 += "password = '" + pasword_caption_log + "';";
                                 myDb.executeQuery(query, "rs1");
                                 String respuesta = "";
                                 while (myDb.next("rs1")) {
@@ -134,7 +135,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "Parametros enviados incorrectos");
+                        deServ(salida, "FAIL PARAMS");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -150,25 +151,27 @@ public class ServidorCliente extends Thread {
                             try {
                                 String query3 = "";
                                 String query = "select count(*) as cantidad_contactos from contacto ";
-                                query += "where correo = '" + user_caption_log_list + "';";
+                                query += "where idusuariopersonal = '" + user_caption_log_list + "';";
                                 myDb.executeQuery(query, "rsl_cantidad");
                                 String respuesta_3 = "";
                                 while (myDb.next("rsl_cantidad")) {
                                     respuesta_3 = myDb.getString("cantidad_contactos", "rsl_cantidad") + "";
                                 }
                                 if (Integer.parseInt(respuesta_3) > 0) {
-                                    String query2 = "select * from contacto ";
-                                    query2 += "where idusuario = '" + user_caption_log_list + "';";
+                                    String query2 = "select usuario.correo as user_correo, servidor.nombre as nombre_server  from contacto ";
+                                    query2 += "inner join usuario, servidor";
+                                    query2 += "on contacto.idusuariocontacto = usuario.idusuario ";
+                                    query2 += "and contacto.idservidor = servidor.idservidor ";
+                                    query2 += "and contacto.idusuariopersonal = '" + user_caption_log_list + "';";
                                     myDb.executeQuery(query2, "rsl_contactos");
                                     Integer cont_aux = 1;
                                     while (myDb.next("rsl_cantidad")) {
                                         if (cont_aux.equals(Integer.parseInt(respuesta_3))) {
-
-                                            deServ(salida, "OK CLIST " + myDb.getString("idusuario", "rsl_contactos")
-                                                    + "@" + myDb.getString("servidor", "rsl_contactos") + " *");
+                                            deServ(salida, "OK CLIST " + myDb.getString("user_correo", "rsl_contactos")
+                                                    + "@" + myDb.getString("nombre_server", "rsl_contactos") + " *");
                                         } else {
-                                            deServ(salida, "OK CLIST " + myDb.getString("idusuario", "rsl_contactos")
-                                                    + "@" + myDb.getString("servidor", "rsl_contactos"));
+                                            deServ(salida, "OK CLIST " + myDb.getString("user_correo", "rsl_contactos")
+                                                    + "@" + myDb.getString("nombre_server", "rsl_contactos"));
                                         }
                                         cont_aux++;
                                     }
@@ -183,7 +186,7 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "Parametros enviados incorrectos");
+                        deServ(salida, "FAIL PARAMS");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -202,10 +205,13 @@ public class ServidorCliente extends Thread {
                                 while (myDb.next("rsl_cantidad")) {
                                     String respuesta_3 = myDb.getString("cantidad_correos", "rsl_cantidad") + "";
                                     if (Integer.parseInt(respuesta_3) > 0) {
-                                        String query2 = "select correo.idusuarioremitente as sender, correo.asunto as asunto, correo.cuerpo as cuerpo";
-                                        query2 += " from correo, destinatario where correo.idcorreo = destinatario.idcorreo ";
-                                        query2 += "and destinatario.idusuarioreceptor = '" + user_caption_log_mails
-                                                + "';";
+                                        String query2 = "select usuario.correo || '@' || servidor.nombre as sender, correo.asunto as asunto, correo.cuerpo as cuerpo";
+                                        query2 += "from correo";
+                                        query2 += "inner join destinatario, servidor, usuario";
+                                        query2 += "on correo.idcorreo = destinatario.idcorreo ";
+                                        query2 += "and correo.idservidor = servidor.idservidor ";
+                                        query2 += "and correo.idusuarioremitente = usuario.idusuario";
+                                        query2 += "and destinatario.idusuarioreceptor = '" +  user_caption_log_mails +"';";
                                         myDb.executeQuery(query2, "rsl_newmails");
                                         Integer cont_aux = 1;
                                         while (myDb.next("rsl_newmails")) {
@@ -236,7 +242,52 @@ public class ServidorCliente extends Thread {
                             }
                         }
                     } else {
-                        deServ(salida, "Parametros enviados incorrectos");
+                        deServ(salida, "FAIL PARAMS");
+                    }
+                    /*------------------------------------------------------------------------*/
+                    break;
+                case "GETID":
+                    /*------------------------------------------------------------------------*/
+                    String user_caption_id = "";
+                    String password_caption_id = "";
+                    if (valores.length == 3) {
+                        user_caption_id = valores[1].trim();
+
+                        if (!myDb.connect()) {
+                            deServ(salida, "ERROR_DB_CONECTIONS");
+                        } else {
+                            try {
+                                String query = "select count(*) as cantidad_usuario from usuario ";
+                                query += "where correo = '" + user_caption_id + "' and ";
+                                query += " password = '" + password_caption_id + "';";
+                                myDb.executeQuery(query, "rsl_cantidad");
+                                String respuesta_3 = "";
+                                while (myDb.next("rsl_cantidad")) {
+                                    respuesta_3 = myDb.getString("cantidad_usuario", "rsl_cantidad") + "";
+                                }
+                                if (Integer.parseInt(respuesta_3) > 0) {
+                                    String query2 = "select * from usuario ";
+                                    query2 += "where correo = '" + user_caption_id + "' and ";
+                                    query2 += " password = '" + password_caption_id + "';";
+                                    myDb.executeQuery(query2, "rsl_data");
+                                    while (myDb.next("rsl_data")) {
+                                        String result_1 = "ID " + myDb.getString("idusuario", "rsl_data");
+                                        deServ(salida, result_1);
+                                        String result_2 = "NOMBRE " + myDb.getString("nombre", "rsl_data");
+                                        deServ(salida, result_1);
+                                    }
+                                } else {
+                                    deServ(salida, "GETID NOT FOUND");
+                                }
+                            } catch (Exception e) {
+                                System.out.println(e.getMessage());
+                                deServ(salida, "GETID ERROR UNKNOWN");
+                            } finally {
+                                myDb.close();
+                            }
+                        }
+                    } else {
+                        deServ(salida, "FAIL PARAMS");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
@@ -248,7 +299,7 @@ public class ServidorCliente extends Thread {
                     /*------------------------------------------------------------------------*/
                     break;
                 default:
-                    deServ(salida, "Comando enviado incorrecto");
+                    deServ(salida, "FAIL COMAND");
                     break;
                 }
             } while (!ingreso.equals("EXIT"));
