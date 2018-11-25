@@ -25,6 +25,7 @@ public class ServidorCliente extends Thread {
     public void deServ(DataOutputStream salida, String valor) {
         try {
             salida.writeUTF("SERVER : " + valor);
+            System.out.println("SERVER : " + valor);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -39,33 +40,45 @@ public class ServidorCliente extends Thread {
             String ingreso = null;
             DB myDb = new DB("servidorcorreo.db");
             do {
-                ingreso = entrada.readUTF();
+                ingreso = entrada.readUTF();                
+                System.out.println("CLIENT : " + ingreso);
                 String[] valores = ingreso.split(" ");
                 String accion = valores[0].trim();
                 switch (accion) {
-                case "VERIFYSERVER":
+                case "VERIFYUSRSERVER":
                     /*------------------------------------------------------------------------*/
                     String user_caption = "";
                     String servidor_caption = "";
                     if (valores.length == 3) {
                         user_caption = valores[1].trim();
-                        usuario_actual = valores[1].trim();
                         servidor_caption = valores[2].trim();
                         if (!myDb.connect()) {
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
-                                String query = "select count(*) as existe from servidor ";
-                                query += "where nombre = '" + servidor_caption + "';";
-                                myDb.executeQuery(query, "rs1");
-                                while (myDb.next("rs1")) {
-                                    String respuesta = myDb.getString("existe", "rs1") + "";
-                                    if (Integer.parseInt(respuesta) >= 1) {
+                                if (servidor_caption.equals("yimail")) {
+                                    String query = "select count(*) as existe from servidor ";
+                                    query += "where lower(nombre) = '" + servidor_caption + "';";
+                                    String query2 = "select count(*) as existe from usuario ";
+                                    query2 += "where correo = '" + user_caption + "';";
+                                    myDb.executeQuery(query, "rs1");
+                                    myDb.executeQuery(query2, "rs2");
+                                    String respuesta = "";
+                                    String respuesta2 = "";
+                                    while (myDb.next("rs1")) {
+                                        respuesta = myDb.getString("existe", "rs1") + "";
+                                    }
+                                    while (myDb.next("rs2")) {
+                                        respuesta2 = myDb.getString("existe", "rs2") + "";
+                                    }
+                                    if (Integer.parseInt(respuesta) >= 1 && Integer.parseInt(respuesta2) >= 1) {
+                                        usuario_actual = valores[1].trim();
                                         deServ(salida, "OK SERVER VERIFICATE");
                                     } else {
                                         deServ(salida, "ERROR NOT SERVER FOUND");
                                     }
                                 }
+                                //agregar la consulta a otro servidor
                             } catch (Exception e) {
                                 System.out.println(e.getMessage());
                             } finally {
@@ -364,7 +377,7 @@ public class ServidorCliente extends Thread {
                                                 deServ(salida, "OK NEWCONT " + correo_caption);
                                             }
                                         } else {
-                                            deServ(salida, "OK NEWCONT " + correo_caption);                                            
+                                            deServ(salida, "OK NEWCONT " + correo_caption);
                                         }
                                     } else {
                                         deServ(salida, "NEWCONT ERROR 109 " + correo_caption);
@@ -394,6 +407,33 @@ public class ServidorCliente extends Thread {
                         deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
+                    break;
+                case "SEND":
+                    String send_instrunction = "";
+                    if (valores.length == 2) {
+                        send_instrunction = valores[1].trim();
+                        if (send_instrunction.equals("MAIL")) {
+                            String ingreso_segunda_cadena = entrada.readUTF();
+                            String[] valores_segunda_cadena = ingreso_segunda_cadena.split(" ");
+                            if (valores_segunda_cadena.length == 4) {
+                                if (valores_segunda_cadena[0].equals("MAIL") && valores_segunda_cadena[1].equals("TO")
+                                        && valores_segunda_cadena[4].equals("*")) {
+                                            String[] correo_local = valores_segunda_cadena[2].split("@");
+                                            if (correo_local[1].equals("yimail")){
+
+                                            } else {
+
+                                            }
+                                } else {
+                                    deServ(salida, "SEND ERROR 106");
+                                }
+                            }
+                        } else {
+                            deServ(salida, "INVALID COMMAND ERROR");
+                        }
+                    } else {
+                        deServ(salida, "INVALID COMMAND ERROR");
+                    }
                     break;
                 case "EXIT":
                     /*------------------------------------------------------------------------*/
