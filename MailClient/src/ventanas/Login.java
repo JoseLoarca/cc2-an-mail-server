@@ -153,16 +153,20 @@ public class Login extends javax.swing.JFrame {
             String leo;
             
             try{
-                if (verifyUserServer(flujoDatosEntrada, flujoDatosSalida, user, "yimail")) {
-                    leo = ("LOGIN" + " " + user +" "+ password);
+               String aux = jTextField1.getText();
+                        String[] parts = aux.split("@");
+                        String username= parts[0];
+                        String server = parts[1];
+                if (verifyUserServer(flujoDatosEntrada, flujoDatosSalida, username, server)) {
+                    leo = ("LOGIN" + " " + parts[0] +" "+ password);
                     flujoDatosSalida.writeUTF(leo); 
                     String response = flujoDatosEntrada.readUTF();
 
                     switch(response) {
                         case "SERVER : OK LOGIN":
                             Interfaz menu = new Interfaz();
-                            menu.setUsername(user);
-                            menu.setUserId(user, password, flujoDatosEntrada, flujoDatosSalida);
+                            menu.setUsername(username);
+                            menu.setUserId(username, password, flujoDatosEntrada, flujoDatosSalida);
                             menu.setVisible(true);
                             this.setVisible(false);
                             break;

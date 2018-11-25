@@ -212,7 +212,8 @@ public class CrearCorreo extends javax.swing.JFrame {
         leo = "MAIL BODY "+jTextField2.getText();
         System.out.println(leo);
         flujoDatosSalida.writeUTF(leo); 
-        leo = "END SEND MAIL";
+        leo = "END"
+                + "SEND MAIL";
         System.out.println(leo);
         flujoDatosSalida.writeUTF(leo); 
         recibo = flujoDatosEntrada.readUTF();
