@@ -152,12 +152,11 @@ public class Login extends javax.swing.JFrame {
                 leo = ("LOGIN" + " " + user +" "+ password);
                 flujoDatosSalida.writeUTF(leo); 
                 String response = flujoDatosEntrada.readUTF();
-
-                System.out.println(response);
                 
                 switch(response) {
                     case "SERVER : OK LOGIN":
                         Interfaz menu = new Interfaz();
+                       
                         menu.setUsername(user);
                         menu.setUserId(user, password, flujoDatosEntrada, flujoDatosSalida);
                         menu.setVisible(true);
@@ -165,21 +164,23 @@ public class Login extends javax.swing.JFrame {
                         break;
                     case "SERVER : LOGIN ERROR 102":
                         JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                        conexion.close();
                         break;
                     case "SERVER : LOGIN ERROR 101":
                         JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                        conexion.close();
                         break;
                     default:
                         JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                        conexion.close();
                         break;
-
                 }
-                conexion.close();
+                
             }catch(Exception e){
                 try {
                     conexion.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+                    System.out.println("No se puedo crear la conexion");
                 }
 		System.out.println("No se puedo crear la conexion");
             }

@@ -5,11 +5,67 @@
  */
 package ventanas;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Harim
  */
 public class Contactos extends javax.swing.JFrame {
+    
+    public DataInputStream flujoDatosEntrada;
+    public DataOutputStream flujoDatosSalida;
+    public String userId;
+    public String reqStr;
+    
+    public void setInfo(DataInputStream input, DataOutputStream output, String id) {
+        flujoDatosEntrada = input;
+        flujoDatosSalida = output;
+        userId = id;
+        Boolean aux = false;
+        String recibo, contact, server, ultimo;
+        
+        try {
+            String reqStr = ("CLIST " + userId);
+            flujoDatosSalida.writeUTF(reqStr);
+            modelo = new DefaultTableModel();
+            modelo.addColumn("Contacto");
+            modelo.addColumn("Servidor");
+            ContactsTable.setModel(modelo);
+             while (aux == false){
+                recibo = flujoDatosEntrada.readUTF();              
+                String[] parts = recibo.split(" ");
+                
+                switch (parts[0]) {
+                    case "OK":
+                        String respContact = parts[4];
+                        String[] partsResp = respContact.split("@");
+                        contact = partsResp[0];
+                        server = partsResp[1];
+                        modelo.addRow(new Object[]{contact, server});
+                        int posicion = recibo.length() - 1;
+                        ultimo = recibo.substring(posicion);
+                        if(ultimo.equals("*")){
+                            aux = true;
+                        }
+                        break;
+                    case "CLIST":
+                        modelo.addRow(new Object[]{"Sin datos.", " "});
+                        aux = true;
+                        break;
+                    default:
+                        modelo.addRow(new Object[]{"Sin datos.", " "});
+                        aux = true;
+                        break;
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error ocurrido: " + e);
+        }
+    }
 
     /**
      * Creates new form Contactos
@@ -28,7 +84,7 @@ public class Contactos extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        ContactsTable = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
@@ -37,18 +93,23 @@ public class Contactos extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        ContactsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Contacto", "Servidor"
             }
-        ));
-        jScrollPane1.setViewportView(jTable1);
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(ContactsTable);
 
         getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 80, 730, 430));
 
@@ -83,6 +144,8 @@ public class Contactos extends javax.swing.JFrame {
         menu.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private static DefaultTableModel modelo;
+    
     /**
      * @param args the command line arguments
      */
@@ -119,11 +182,11 @@ public class Contactos extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable ContactsTable;
     private javax.swing.JLabel fondo;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
 }
