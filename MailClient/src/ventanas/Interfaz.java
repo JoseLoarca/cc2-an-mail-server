@@ -162,6 +162,7 @@ public class Interfaz extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         Contactos menu = new Contactos();
+        menu.setInfo(flujoDatosEntrada, flujoDatosSalida, userId);
         menu.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 

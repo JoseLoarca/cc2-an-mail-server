@@ -35,10 +35,11 @@ public class Contactos extends javax.swing.JFrame {
             modelo.addColumn("Servidor");
             ContactsTable.setModel(modelo);
              while (aux == false){
-                recibo = flujoDatosEntrada.readUTF();              
-                String[] parts = recibo.split(" ");
+                recibo = flujoDatosEntrada.readUTF();     
                 
-                switch (parts[0]) {
+                String[] parts = recibo.split(" ");
+               
+                switch (parts[2]) {
                     case "OK":
                         String respContact = parts[4];
                         String[] partsResp = respContact.split("@");

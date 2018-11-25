@@ -156,7 +156,6 @@ public class Login extends javax.swing.JFrame {
                 switch(response) {
                     case "SERVER : OK LOGIN":
                         Interfaz menu = new Interfaz();
-                       
                         menu.setUsername(user);
                         menu.setUserId(user, password, flujoDatosEntrada, flujoDatosSalida);
                         menu.setVisible(true);
