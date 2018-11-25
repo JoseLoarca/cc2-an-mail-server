@@ -61,16 +61,17 @@ public class MailClient {
     public static void main(String[] args) {
         Timer timer = new Timer();
         String leo;
-        String ip = "192.168.1.8";
+        String ip = "192.168.1.6";
         int PUERTO = 1400;
          
-        login = new Login();
-        login.setVisible(true);
-        
         try{
             conexion = new Socket(ip,PUERTO);
             flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
             flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
+            
+            login = new Login();
+            login.setInfo(flujoDatosEntrada, flujoDatosSalida, conexion);
+            login.setVisible(true);
             
             timer.scheduleAtFixedRate(timerTask, 0, 15000);
             

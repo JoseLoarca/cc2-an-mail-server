@@ -16,6 +16,17 @@ import javax.swing.JOptionPane;
  */
 public class Login extends javax.swing.JFrame {
 
+    public DataInputStream flujoDatosEntrada;
+    public DataOutputStream flujoDatosSalida;
+    public String userId;
+    public Socket conexion;
+    
+    public void setInfo(DataInputStream input, DataOutputStream output, Socket conexion) {
+        flujoDatosEntrada = input;
+        flujoDatosSalida = output;
+        this.conexion = conexion;
+    }
+    
     /**
      * Creates new form Login
      */
@@ -140,15 +151,8 @@ public class Login extends javax.swing.JFrame {
            JOptionPane.showMessageDialog(null, "Por favor complete ambos campos.", "Error", JOptionPane.ERROR_MESSAGE);
         }else{
             String leo;
-            String ip = "192.168.1.6";
-            Socket conexion = null;
-            int PUERTO = 1400;
             
             try{
-                conexion = new Socket(ip,PUERTO);
-                DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
-                DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
-                
                 if (verifyUserServer(flujoDatosEntrada, flujoDatosSalida, user, "yimail")) {
                     leo = ("LOGIN" + " " + user +" "+ password);
                     flujoDatosSalida.writeUTF(leo); 
