@@ -12,7 +12,7 @@ public class Inicioservidor extends Thread {
             System.out.println("Esperando conexion de servidor");
             while(true){
 	            sc1 = cs1.accept();
-	            ServerToServer server = new ServerToServer(sc1);
+	            ServerToServer server = new ServerToServer();
 	            server.start();
 	        }
         }catch(Exception e){
