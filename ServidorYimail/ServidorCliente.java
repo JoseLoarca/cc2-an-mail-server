@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 import java.util.Scanner;
 
@@ -8,6 +9,7 @@ public class ServidorCliente extends Thread {
     // InetAddress a = null;
     SocketAddress a = null;
     String ingreso = null;
+    private static Semaphore mute = new Semaphore(1, true);
     String usuario_actual = null;
 
     public ServidorCliente(Socket cliente) {
