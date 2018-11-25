@@ -60,10 +60,11 @@ public class DNSes extends Thread {
             flujoDatosSalida.writeUTF(leo); 
             retorno = flujoDatosEntrada.readUTF();
             conexion.close();
-            return retorno;
         }catch(Exception e){
             System.out.println("No se puedo crear la conexion");
+            retorno = "CHECK ERROR DNS_FAIL";
         }
+        return retorno;
     }
 
     TimerTask timerTask = new TimerTask(){ 
@@ -76,7 +77,7 @@ public class DNSes extends Thread {
     public void run() {
         Timer timer = new Timer();
         online();
-        timer.scheduleAtFixedRate(timerTask, 0, 20000);
+        timer.scheduleAtFixedRate(timerTask, 0, 20000); 
         System.out.println("llega a servidor");
     }
 }
