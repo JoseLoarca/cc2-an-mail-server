@@ -6,6 +6,8 @@
 package ventanas;
 import java.io.*;
 import java.net.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -174,7 +176,11 @@ public class Login extends javax.swing.JFrame {
                 }
                 conexion.close();
             }catch(Exception e){
-                conexion.close();
+                try {
+                    conexion.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+                }
 		System.out.println("No se puedo crear la conexion");
             }
        }
