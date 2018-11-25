@@ -18,7 +18,7 @@ public class ServidorCliente extends Thread {
     // InetAddress a = null;
     SocketAddress a = null;
     String ingreso = null;
-    private static Semaphore mute = new Semaphore(1,true);
+    private static Semaphore mute = new Semaphore(1, true);
 
     public ServidorCliente(Socket cliente) {
         this.cliente = cliente;
@@ -214,7 +214,8 @@ public class ServidorCliente extends Thread {
                                         query2 += "on correo.idcorreo = destinatario.idcorreo ";
                                         query2 += "and correo.idservidor = servidor.idservidor ";
                                         query2 += "and correo.idusuarioremitente = usuario.idusuario";
-                                        query2 += "and destinatario.idusuarioreceptor = '" +  user_caption_log_mails +"';";
+                                        query2 += "and destinatario.idusuarioreceptor = '" + user_caption_log_mails
+                                                + "';";
                                         myDb.executeQuery(query2, "rsl_newmails");
                                         Integer cont_aux = 1;
                                         while (myDb.next("rsl_newmails")) {
@@ -255,6 +256,7 @@ public class ServidorCliente extends Thread {
                     String password_caption_id = "";
                     if (valores.length == 3) {
                         user_caption_id = valores[1].trim();
+                        password_caption_id = valores[2].trim();
 
                         if (!myDb.connect()) {
                             deServ(salida, "ERROR_DB_CONECTIONS");
@@ -289,6 +291,37 @@ public class ServidorCliente extends Thread {
                                 myDb.close();
                             }
                         }
+                    } else {
+                        deServ(salida, "FAIL PARAMS");
+                    }
+                    /*------------------------------------------------------------------------*/
+                    break;
+                case "LOGOUT":
+                    /*------------------------------------------------------------------------*/
+                    String user_caption_logout = "";
+                    if (valores.length == 2) {
+                        user_caption_logout = valores[1].trim();
+
+                        if (!myDb.connect()) {
+                            deServ(salida, "ERROR_DB_CONECTIONS");
+                        } else {
+                            try {
+                                String query3 = "update usuario set estado='0' where idusuario='" + user_caption_logout
+                                        + "';";
+                                boolean respuesta_3 = myDb.executeNonQuery(query3);
+                                if (respuesta_3) {
+                                    deServ(salida, "OK LOGOUT");
+                                } else {
+                                    deServ(salida, "LOGOUT ERROR UNKNOWN");
+                                }
+                            } catch (Exception e) {
+                                System.out.println(e.getMessage());
+                                deServ(salida, "LOGOUT ERROR UNKNOWN");
+                            } finally {
+                                myDb.close();
+                            }
+                        }
+                        
                     } else {
                         deServ(salida, "FAIL PARAMS");
                     }
