@@ -51,7 +51,7 @@ public class ServerToServer extends Thread {
 		}
     }
 
-    public void offline(){
+    public void GETIPTABLE(){
 	private String ip = "localhost";
 	private Socket conexion = null;
 	private int PUERTO = 1200;
