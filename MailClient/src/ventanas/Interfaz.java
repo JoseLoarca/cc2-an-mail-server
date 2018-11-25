@@ -17,10 +17,6 @@ public class Interfaz extends javax.swing.JFrame {
     public Interfaz() {
         initComponents();
     }
-    
-    public void setUsername(String username) {
-        NombreUser.setText(username);
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -94,14 +90,14 @@ public class Interfaz extends javax.swing.JFrame {
         getContentPane().add(NombreUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 10, -1, -1));
 
         fondoImagen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/fondo.PNG"))); // NOI18N
-        getContentPane().add(fondoImagen, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 850, -1));
+        getContentPane().add(fondoImagen, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
-        Correos menu = new Correos();    
+        Correos menu = new Correos();
         menu.setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed
 
@@ -143,7 +139,7 @@ public class Interfaz extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(Interfaz.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
