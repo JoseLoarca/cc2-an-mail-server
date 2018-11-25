@@ -45,7 +45,6 @@ public class Login extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
         jLabelFondo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -115,14 +114,6 @@ public class Login extends javax.swing.JFrame {
         jLabel1.setToolTipText("");
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 230, 20, 30));
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 60, -1, -1));
-
         jLabelFondo.setBackground(java.awt.SystemColor.textHighlight);
         jLabelFondo.setForeground(java.awt.Color.white);
         jLabelFondo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/comettt.png"))); // NOI18N
@@ -131,65 +122,63 @@ public class Login extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    public boolean validFields() {
+        if(jTextField1.getText().isEmpty() || jPasswordField1.getText().isEmpty() ||
+                jTextField1.getText().trim().equals("") || jPasswordField1.getText().trim().equals("")) {
+            return false;
+        }
+        return true;
+    }
+    
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
-       // BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
-                               String user = jTextField1.getText().toLowerCase();
-                        String password = jPasswordField1.getText().toLowerCase();
-       if(jTextField1.getText().toLowerCase() == null && jPasswordField1.getText().toLowerCase()== null ){
-           JOptionPane.showMessageDialog(null, "No ingreso todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
-       }else{
-       String leo;
-	 String ip = "192.168.1.6";
-	 Socket conexion = null;
-	 int PUERTO = 1400;
+        String user = jTextField1.getText().toLowerCase();
+        String password = jPasswordField1.getText().toLowerCase();
+        if( ! validFields()){
+           JOptionPane.showMessageDialog(null, "Por favor complete ambos campos.", "Error", JOptionPane.ERROR_MESSAGE);
+        }else{
+            String leo;
+            String ip = "192.168.1.6";
+            Socket conexion = null;
+            int PUERTO = 1400;
+            
+            try{
+                conexion = new Socket(ip,PUERTO);
+                DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
+                DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
 
-		try{
-			conexion = new Socket(ip,PUERTO);
-			DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
-			DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
-			
-                        System.out.println("ingrese informacion a enviar al servidor");
-                        leo = ("LOGIN" + " " + user +" "+ password);
-                        System.out.println("lo que se metio en leo: "+ leo);
-                        flujoDatosSalida.writeUTF(leo); 
-                        String response = flujoDatosEntrada.readUTF();
-                        
-                        System.out.println("Eco: " + response);
-                        
-                        switch(response) {
-                            case "SERVER : OK LOGIN":
-                                    Interfaz menu = new Interfaz();
-                                    menu.setUsername(user);
-                                    menu.setUserId(user, password);
-                                    menu.setVisible(true);
-                                    this.setVisible(false);
-                                break;
-                            case "SERVER : LOGIN ERROR 102":
-                                JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                                break;
-                            case "SERVER : LOGIN ERROR 101":
-                                JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                                break;
-                            default:
-                                JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                                break;
-                             
-                        }
+                leo = ("LOGIN" + " " + user +" "+ password);
+                flujoDatosSalida.writeUTF(leo); 
+                String response = flujoDatosEntrada.readUTF();
 
-		}catch(Exception e){
-			System.out.println("No se puedo crear la conexion");
-		}
+                System.out.println(response);
+                
+                switch(response) {
+                    case "SERVER : OK LOGIN":
+                        Interfaz menu = new Interfaz();
+                        menu.setUsername(user);
+                        menu.setUserId(user, password, flujoDatosEntrada, flujoDatosSalida);
+                        menu.setVisible(true);
+                        this.setVisible(false);
+                        break;
+                    case "SERVER : LOGIN ERROR 102":
+                        JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                        break;
+                    case "SERVER : LOGIN ERROR 101":
+                        JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                        break;
+                    default:
+                        JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                        break;
+
+                }
+                conexion.close();
+            }catch(Exception e){
+                conexion.close();
+		System.out.println("No se puedo crear la conexion");
+            }
        }
-       
-	
-
     }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        JOptionPane.showMessageDialog(null, "My Goodness, this is so concise");
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -228,7 +217,6 @@ public class Login extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
