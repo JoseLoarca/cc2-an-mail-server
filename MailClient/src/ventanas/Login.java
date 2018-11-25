@@ -134,8 +134,8 @@ public class Login extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
        // BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
-                               String user = jTextField1.getText().toLowerCase();
-                        String password = jPasswordField1.getText().toLowerCase();
+       String user = jTextField1.getText().toLowerCase();
+       String password = jPasswordField1.getText().toLowerCase();
        if(jTextField1.getText().toLowerCase() == null && jPasswordField1.getText().toLowerCase()== null ){
            JOptionPane.showMessageDialog(null, "No ingreso todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
        }else{
@@ -160,7 +160,7 @@ public class Login extends javax.swing.JFrame {
                         switch(response) {
                             case "SERVER : OK LOGIN":
                                     Interfaz menu = new Interfaz();
-                                    menu.username = 'loarca';
+                                    menu.setUsername(user);
                                     menu.setVisible(true);
                                     this.setVisible(false);
                                 break;
