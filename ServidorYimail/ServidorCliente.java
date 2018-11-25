@@ -82,7 +82,7 @@ public class ServidorCliente extends Thread {
             String ingreso = null;
             DB myDb = new DB("servidorcorreo.db");
             do {
-                ingreso = entrada.readUTF();                
+                ingreso = entrada.readUTF();
                 System.out.println("CLIENT : " + ingreso);
                 String[] valores = ingreso.split(" ");
                 String accion = valores[0].trim();
@@ -120,7 +120,7 @@ public class ServidorCliente extends Thread {
                                         deServ(salida, "ERROR NOT SERVER FOUND");
                                     }
                                 }
-                                //agregar la consulta a otro servidor
+                                // agregar la consulta a otro servidor
                             } catch (Exception e) {
                                 System.out.println(e.getMessage());
                             } finally {
@@ -396,7 +396,7 @@ public class ServidorCliente extends Thread {
                                         query_string_2 += " inner join usuario";
                                         query_string_2 += " on contacto.idusuariocontacto = usuario.idusuario";
                                         query_string_2 += " and contacto.idusuariopersonal = '" + id_usuario_actual
-                                                + "';";
+                                                + "' and usuario.correo = '" + parts[0] + "';";
                                         myDb.executeQuery(query_string_2, "rsl_existe_3");
                                         String respuesta_5 = "";
                                         while (myDb.next("rsl_existe_3")) {
@@ -456,19 +456,247 @@ public class ServidorCliente extends Thread {
                         send_instrunction = valores[1].trim();
                         if (send_instrunction.equals("MAIL")) {
                             String ingreso_segunda_cadena = entrada.readUTF();
+                            System.out.println("CLIENT : " + ingreso_segunda_cadena);
                             String[] valores_segunda_cadena = ingreso_segunda_cadena.split(" ");
                             if (valores_segunda_cadena.length == 4) {
-                                if (valores_segunda_cadena[0].equals("MAIL") && valores_segunda_cadena[1].equals("TO")
-                                        && valores_segunda_cadena[4].equals("*")) {
-                                            String[] correo_local = valores_segunda_cadena[2].split("@");
-                                            if (correo_local[1].equals("yimail")){
+                                if (valores_segunda_cadena[0].trim().equals("MAIL")
+                                        && valores_segunda_cadena[1].trim().equals("TO")
+                                        && valores_segunda_cadena[3].trim().equals("*")) {
+                                    String[] correo_local = valores_segunda_cadena[2].split("@");
+                                    if (correo_local[1].equals("yimail")) {
+                                        String send_instrunction_2 = entrada.readUTF();
+                                        System.out.println("CLIENT : " + send_instrunction_2);
+                                        String[] valores_tercera_cadena = send_instrunction_2.split(" ");
+                                        if (valores_tercera_cadena[0].trim().equals("MAIL")
+                                                && valores_tercera_cadena[1].trim().equals("SUBJECT")) {
+                                            String send_instruction_3 = entrada.readUTF();
+                                            System.out.println("CLIENT : " + send_instruction_3);
+                                            String[] valores_cuarta_cadena = send_instruction_3.split(" ");
+                                            if (valores_cuarta_cadena[0].trim().equals("MAIL")
+                                                    && valores_cuarta_cadena[1].trim().equals("BODY")) {
+                                                String sed_instruction_4 = entrada.readUTF();
+                                                System.out.println("CLIENT : " + sed_instruction_4);
+                                                String[] valore_quita_cadena = sed_instruction_4.split(" ");
+                                                if (valore_quita_cadena.length >= 3) {
+                                                    if (valore_quita_cadena[0].trim().equals("END")
+                                                            && valore_quita_cadena[1].trim().equals("SEND")
+                                                            && valore_quita_cadena[2].trim().equals("MAIL")) {
 
+                                                        if (!myDb.connect()) {
+                                                            deServ(salida, "ERROR_DB_CONECTIONS");
+                                                        } else {
+                                                            try {
+
+                                                                String query_string = "select (MAX(idcorreo) + 1) as maximo from correo;";
+                                                                myDb.executeQuery(query_string, "rsl_maximo");
+                                                                String maximo = "";
+                                                                while (myDb.next("rsl_maximo")) {
+                                                                    maximo = myDb.getString("maximo", "rsl_maximo")
+                                                                            + "";
+                                                                }
+
+                                                                String cadena_asunto = "";
+                                                                int size_asunto = valores_tercera_cadena.length;
+                                                                for (int i = 2; i < size_asunto; i++) {
+                                                                    cadena_asunto += valores_tercera_cadena[i].trim()
+                                                                            + " ";
+                                                                }
+
+                                                                String cadena_cuerpo = "";
+                                                                int size_cuerpo = valores_cuarta_cadena.length;
+                                                                for (int i = 2; i < size_cuerpo; i++) {
+                                                                    cadena_cuerpo += valores_cuarta_cadena[i].trim()
+                                                                            + " ";
+                                                                }
+
+                                                                String query_insert_correo = "insert into correo (idcorreo,asunto,cuerpo,idusuarioremitente,idservidor)";
+                                                                query_insert_correo += "values('" + maximo + "','"
+                                                                        + cadena_asunto.trim() + "','"
+                                                                        + cadena_cuerpo.trim() + "','"
+                                                                        + id_usuario_actual + "','1');";
+
+                                                                boolean respuesta_insert_correo = myDb
+                                                                        .executeNonQuery(query_insert_correo);
+
+                                                                String query_string_2 = "select idusuario from usuario where lower(correo) = '"
+                                                                        + correo_local[0].trim() + "';";
+                                                                myDb.executeQuery(query_string_2, "rsl_id_contacto");
+                                                                String id_contacto = "";
+                                                                while (myDb.next("rsl_id_contacto")) {
+                                                                    id_contacto = myDb.getString("idusuario",
+                                                                            "rsl_id_contacto") + "";
+                                                                }
+
+                                                                String query_insert_destinatario = "insert into destinatario (idusuarioreceptor,idcorreo)";
+                                                                query_insert_destinatario += "values(" + id_contacto
+                                                                        + "," + maximo + ");";
+
+                                                                boolean respuesta_insert_destinatario = myDb
+                                                                        .executeNonQuery(query_insert_destinatario);
+
+                                                                if (respuesta_insert_correo
+                                                                        && respuesta_insert_destinatario) {
+                                                                    deServ(salida, "OK SEND MAIL");
+                                                                }
+
+                                                            } catch (Exception e) {
+                                                                System.out.println(e.getMessage());
+                                                                deServ(salida, "SEND MAIL ERROR UNKNOWN");
+                                                            } finally {
+                                                                myDb.close();
+                                                            }
+                                                        }
+                                                    }
+                                                } else {
+                                                    deServ(salida, "INVALID COMMAND ERROR");
+                                                }
                                             } else {
-
+                                                deServ(salida, "SEND ERROR 108");
                                             }
+                                        } else {
+                                            deServ(salida, "SEND ERROR 107");
+                                        }
+                                    } else {
+                                        // enviar correo a servidor externo
+                                    }
                                 } else {
                                     deServ(salida, "SEND ERROR 106");
                                 }
+                            } else if (valores_segunda_cadena.length == 3) {
+                                boolean auxiliar_bandera = true;
+                                String usuarios_destinatarios = "";
+                                if (valores_segunda_cadena[0].trim().equals("MAIL")
+                                        && valores_segunda_cadena[1].trim().equals("TO")) {
+                                    // String[] correo_local = valores_segunda_cadena[2].split("@");
+                                    usuarios_destinatarios += valores_segunda_cadena[2] + "|";
+                                } else {
+                                    auxiliar_bandera = false;
+                                    deServ(salida, "SEND ERROR 106");
+                                }
+                                while (auxiliar_bandera) {
+                                    String send_instrunction_23 = entrada.readUTF();
+                                    System.out.println("CLIENT : " + send_instrunction_23);
+                                    String[] valores_tercera_cadena2 = send_instrunction_23.split(" ");
+                                    if (valores_tercera_cadena2.length == 4) {
+                                        if (valores_tercera_cadena2[0].trim().equals("MAIL")
+                                                && valores_tercera_cadena2[1].trim().equals("TO")
+                                                && valores_tercera_cadena2[3].equals("*")) {
+                                            usuarios_destinatarios += valores_tercera_cadena2[2] + "|";
+                                            auxiliar_bandera = false;
+                                        }
+                                    } else if (valores_tercera_cadena2.length == 3) {
+                                        if (valores_tercera_cadena2[0].trim().equals("MAIL")
+                                                && valores_tercera_cadena2[1].trim().equals("TO")) {
+                                            usuarios_destinatarios += valores_tercera_cadena2[2] + "|";
+                                        }
+                                    } else {
+                                        auxiliar_bandera = false;
+
+                                        if (usuarios_destinatarios != "") {
+                                            String[] destinatarios = usuarios_destinatarios.split("|");
+                                            for (int i = 0; i < destinatarios.length; i++) {
+                                                String user_server_dest = destinatarios[i];
+                                                String[] correo_local2 = user_server_dest.split("@");
+                                                if (correo_local2[1].equals("yimail")) {
+                                                    if (valores_tercera_cadena2[0].trim().equals("MAIL")
+                                                            && valores_tercera_cadena2[1].trim().equals("SUBJECT")) {
+                                                        String send_instruction_31 = entrada.readUTF();
+                                                        System.out.println("CLIENT : " + send_instruction_31);
+                                                        String[] valores_cuarta_cadena2 = send_instruction_31.split(" ");
+                                                        if (valores_cuarta_cadena2[0].trim().equals("MAIL")
+                                                                && valores_cuarta_cadena2[1].trim().equals("BODY")) {
+                                                            String sed_instruction_41 = entrada.readUTF();
+                                                            System.out.println("CLIENT : " + sed_instruction_41);
+                                                            String[] valore_quita_cadena2 = sed_instruction_41.split(" ");
+                                                            if (valore_quita_cadena2.length == 3) {
+                                                                if (valore_quita_cadena2[0].trim().equals("END")
+                                                                        && valore_quita_cadena2[1].trim().equals("SEND")
+                                                                        && valore_quita_cadena2[2].trim().equals("MAIL")) {
+
+                                                                    if (!myDb.connect()) {
+                                                                        deServ(salida, "ERROR_DB_CONECTIONS");
+                                                                    } else {
+                                                                        try {
+
+                                                                            String query_string_more = "select (MAX(idcorreo) + 1) as maximo from correo;";
+                                                                            myDb.executeQuery(query_string_more,
+                                                                                    "rsl_maximo");
+                                                                            String maximo_2 = "";
+                                                                            while (myDb.next("rsl_maximo")) {
+                                                                                maximo_2 = myDb.getString("maximo",
+                                                                                        "rsl_maximo") + "";
+                                                                            }
+
+                                                                            String cadena_asunto_2 = "";
+                                                                            int size_asunto2 = valores_tercera_cadena2.length;
+                                                                            for (int j = 2; j < size_asunto2; j++) {
+                                                                                cadena_asunto_2 += valores_tercera_cadena2[j]
+                                                                                        .trim() + " ";
+                                                                            }
+
+                                                                            String cadena_cuerpo2 = "";
+                                                                            int size_cuerpo2 = valores_cuarta_cadena2.length;
+                                                                            for (int h = 2; h < size_cuerpo2; h++) {
+                                                                                cadena_cuerpo2 += valores_cuarta_cadena2[h]
+                                                                                        .trim() + " ";
+                                                                            }
+
+                                                                            String query_insert_correo2 = "insert into correo (idcorreo,asunto,cuerpo,idusuarioremitente,idservidor)";
+                                                                            query_insert_correo2 += "values('" + maximo_2
+                                                                                    + "','" + cadena_asunto_2.trim()
+                                                                                    + "','" + cadena_cuerpo2.trim()
+                                                                                    + "','" + id_usuario_actual
+                                                                                    + "','1');";
+
+                                                                            boolean respuesta_insert_correo2 = myDb.executeNonQuery(query_insert_correo2);
+
+                                                                            String query_string_21 = "select idusuario from usuario where lower(correo) = '"
+                                                                                    + correo_local2[0].trim() + "';";
+                                                                            myDb.executeQuery(query_string_21,
+                                                                                    "rsl_id_contacto");
+                                                                            String id_contacto2 = "";
+                                                                            while (myDb.next("rsl_id_contacto")) {
+                                                                                id_contacto2 = myDb.getString(
+                                                                                        "idusuario", "rsl_id_contacto")
+                                                                                        + "";
+                                                                            }
+
+                                                                            String query_insert_destinatario2 = "insert into destinatario (idusuarioreceptor,idcorreo)";
+                                                                            query_insert_destinatario2 += "values("
+                                                                                    + id_contacto2 + "," + maximo_2 + ");";
+
+                                                                            boolean respuesta_insert_destinatario2 = myDb.executeNonQuery(query_insert_destinatario2);
+
+                                                                            if (respuesta_insert_correo2
+                                                                                    && respuesta_insert_destinatario2) {
+                                                                                deServ(salida, "OK SEND MAIL");
+                                                                            }
+
+                                                                        } catch (Exception e) {
+                                                                            System.out.println(e.getMessage());
+                                                                            deServ(salida, "SEND MAIL ERROR UNKNOWN");
+                                                                        } finally {
+                                                                            myDb.close();
+                                                                        }
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                deServ(salida, "INVALID COMMAND ERROR");
+                                                            }
+                                                        } else {
+                                                            deServ(salida, "SEND ERROR 108");
+                                                        }
+                                                    } else {
+                                                        deServ(salida, "SEND ERROR 107");
+                                                    }
+                                                } else {
+                                                    // enviar correo a servidor externo
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                             }
                         } else {
                             deServ(salida, "INVALID COMMAND ERROR");
