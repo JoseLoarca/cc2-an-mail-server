@@ -9,8 +9,8 @@ public class ServidorCliente extends Thread {
     // InetAddress a = null;
     SocketAddress a = null;
     String ingreso = null;
-   // private static Semaphore mute = new Semaphore(1, true);
     String usuario_actual = null;
+    String id_usuario_actual = null;
 
     public ServidorCliente(Socket cliente) {
         this.cliente = cliente;
@@ -31,7 +31,6 @@ public class ServidorCliente extends Thread {
     }
 
     public void run() {
-      //  mute.acquireUninterruptibly();
         try {
             DataOutputStream salida = new DataOutputStream(this.cliente.getOutputStream());
             System.out.print("conectado al servidor, direccion: ");
@@ -161,7 +160,7 @@ public class ServidorCliente extends Thread {
                                     query2 += "and contacto.idusuariopersonal = '" + user_caption_log_list + "';";
                                     myDb.executeQuery(query2, "rsl_contactos");
                                     Integer cont_aux = 1;
-                                    while (myDb.next("rsl_cantidad")) {
+                                    while (myDb.next("rsl_contactos")) {
                                         if (cont_aux.equals(Integer.parseInt(respuesta_3))) {
                                             deServ(salida, "OK CLIST " + myDb.getString("user_correo", "rsl_contactos")
                                                     + "@" + myDb.getString("nombre_server", "rsl_contactos") + " *");
@@ -195,8 +194,8 @@ public class ServidorCliente extends Thread {
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
-                                String query = "select count(*) as cantidad_correos from correo ";
-                                query += "where idusuarioremitente = '" + user_caption_log_mails + "';";
+                                String query = "select count(*) as cantidad_correos from destinatario ";
+                                query += "where idusuarioreceptor = '" + user_caption_log_mails + "';";
                                 myDb.executeQuery(query, "rsl_cantidad");
                                 String respuesta_3 = "";
                                 while (myDb.next("rsl_cantidad")) {
@@ -209,23 +208,20 @@ public class ServidorCliente extends Thread {
                                     query2 += " on correo.idcorreo = destinatario.idcorreo";
                                     query2 += " and correo.idservidor = servidor.idservidor";
                                     query2 += " and correo.idusuarioremitente = usuario.idusuario";
-                                    query2 += " and destinatario.idusuarioreceptor = '" + user_caption_log_mails
-                                            + "';";
+                                    query2 += " and destinatario.idusuarioreceptor = '" + user_caption_log_mails + "';";
                                     myDb.executeQuery(query2, "rsl_newmails");
                                     Integer cont_aux = 1;
                                     while (myDb.next("rsl_newmails")) {
                                         if (cont_aux.equals(Integer.parseInt(respuesta_3))) {
                                             deServ(salida,
-                                                    "OK GETNEWMAILS " + myDb.getString("sender", "rsl_newmails")
-                                                            + " '" + myDb.getString("asunto", "rsl_newmails")
-                                                            + "' '" + myDb.getString("cuerpo", "rsl_newmails")
-                                                            + "' *");
+                                                    "OK GETNEWMAILS " + myDb.getString("sender", "rsl_newmails") + " '"
+                                                            + myDb.getString("asunto", "rsl_newmails") + "' '"
+                                                            + myDb.getString("cuerpo", "rsl_newmails") + "' *");
                                         } else {
                                             deServ(salida,
-                                                    "OK GETNEWMAILS " + myDb.getString("sender", "rsl_newmails")
-                                                            + " '" + myDb.getString("asunto", "rsl_newmails")
-                                                            + "' '" + myDb.getString("cuerpo", "rsl_newmails")
-                                                            + "'");
+                                                    "OK GETNEWMAILS " + myDb.getString("sender", "rsl_newmails") + " '"
+                                                            + myDb.getString("asunto", "rsl_newmails") + "' '"
+                                                            + myDb.getString("cuerpo", "rsl_newmails") + "'");
                                         }
                                         cont_aux++;
                                     }
@@ -271,6 +267,7 @@ public class ServidorCliente extends Thread {
                                     myDb.executeQuery(query2, "rsl_data");
                                     while (myDb.next("rsl_data")) {
                                         String result_1 = "" + myDb.getString("idusuario", "rsl_data");
+                                        id_usuario_actual = result_1;
                                         deServ(salida, result_1);
                                         String result_2 = "" + myDb.getString("nombre", "rsl_data");
                                         deServ(salida, result_2);
@@ -340,13 +337,51 @@ public class ServidorCliente extends Thread {
                                         respuesta_3 = myDb.getString("existe", "rsl_existe") + "";
                                     }
                                     if (Integer.parseInt(respuesta_3) > 0) {
-                                        String query_string_2 = "";
-                                        deServ(salida, "OK NEWCONT " + correo_caption);
+                                        String query_string_2 = "select count(*) as existe from contacto";
+                                        query_string_2 += " inner join usuario";
+                                        query_string_2 += " on contacto.idusuariocontacto = usuario.idusuario";
+                                        query_string_2 += " and contacto.idusuariopersonal = '" + id_usuario_actual
+                                                + "';";
+                                        myDb.executeQuery(query_string_2, "rsl_existe_3");
+                                        String respuesta_5 = "";
+                                        while (myDb.next("rsl_existe_3")) {
+                                            respuesta_5 = myDb.getString("existe", "rsl_existe_3") + "";
+                                        }
+                                        if (Integer.parseInt(respuesta_5) <= 0) {
+                                            String query_obtener_idcontacto = "select idusuario from usuario";
+                                            query_obtener_idcontacto += " where correo = '" + parts[0] + "';";
+                                            myDb.executeQuery(query_obtener_idcontacto, "rsl_idusuario_contact");
+                                            String respuesta_6 = "";
+                                            while (myDb.next("rsl_idusuario_contact")) {
+                                                respuesta_6 = myDb.getString("idusuario", "rsl_idusuario_contact") + "";
+                                            }
+
+                                            String query_insert_newcont = "insert into contacto (idusuariopersonal,idusuariocontacto,idservidor)";
+                                            query_insert_newcont += "values(" + id_usuario_actual + "," + respuesta_6
+                                                    + ",1);";
+                                            boolean respuesta_7 = myDb.executeNonQuery(query_insert_newcont);
+                                            if (respuesta_7) {
+                                                deServ(salida, "OK NEWCONT " + correo_caption);
+                                            }
+                                        } else {
+                                            deServ(salida, "OK NEWCONT " + correo_caption);                                            
+                                        }
                                     } else {
                                         deServ(salida, "NEWCONT ERROR 109 " + correo_caption);
                                     }
                                 } else {
-                                    
+                                    String query_string_two = "select count(*) as existe from servidor";
+                                    query_string_two += " where lower(nombre) = '" + parts[1] + "';";
+                                    myDb.executeQuery(query_string_two, "rsl_existe_2");
+                                    String respuesta_4 = "";
+                                    while (myDb.next("rsl_existe_2")) {
+                                        respuesta_4 = myDb.getString("existe", "rsl_existe_2") + "";
+                                    }
+                                    if (Integer.parseInt(respuesta_4) == 0) {
+                                        deServ(salida, "NEWCONT ERROR 110 " + correo_caption);
+                                    } else {
+                                        deServ(salida, "OK NEWCONT " + correo_caption);
+                                    }
                                 }
                             } catch (Exception e) {
                                 System.out.println(e.getMessage());
@@ -382,6 +417,5 @@ public class ServidorCliente extends Thread {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-      //  mute.release();
     }
 }

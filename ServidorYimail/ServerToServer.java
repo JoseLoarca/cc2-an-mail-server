@@ -18,14 +18,14 @@ public class ServerToServer extends Thread {
     }
 
     public void online(){
-	private String ip = "localhost";
-	private Socket conexion = null;
-	private int PUERTO = 1200;
+	String ip = "localhost";
+	Socket conexion = null;
+	int PUERTO = 1200;
 		try{
 			conexion = new Socket(ip,PUERTO);
 			DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
 			DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());
-			private String leo = "ONLINE yimail " + ip;
+			String leo = "ONLINE yimail " + ip;
 			flujoDatosSalida.writeUTF(leo); 
 			System.out.println("Eco: " + flujoDatosEntrada.readUTF());
 			conexion.close();
@@ -35,14 +35,14 @@ public class ServerToServer extends Thread {
     }
 
     public void offline(){
-	private String ip = "localhost";
-	private Socket conexion = null;
-	private int PUERTO = 1200;
+	String ip = "localhost";
+	Socket conexion = null;
+	int PUERTO = 1200;
 		try{
 			conexion = new Socket(ip,PUERTO);
 			DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
 			DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());
-			private String leo = "ONLINE yimail ";
+			String leo = "ONLINE yimail ";
 			flujoDatosSalida.writeUTF(leo); 
 			System.out.println("Eco: " + flujoDatosEntrada.readUTF());
 			conexion.close();
@@ -52,14 +52,14 @@ public class ServerToServer extends Thread {
     }
 
     public void GETIPTABLE(){
-	private String ip = "localhost";
-	private Socket conexion = null;
-	private int PUERTO = 1200;
+	String ip = "localhost";
+	Socket conexion = null;
+	int PUERTO = 1200;
 		try{
 			conexion = new Socket(ip,PUERTO);
 			DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
 			DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());
-			private String leo = "GETIPTABLE";
+			String leo = "GETIPTABLE";
 			flujoDatosSalida.writeUTF(leo); 
 			System.out.println("Eco: " + flujoDatosEntrada.readUTF());
 			conexion.close();
