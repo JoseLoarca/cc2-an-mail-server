@@ -5,6 +5,11 @@
  */
 package ventanas;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.ArrayList;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Harim
@@ -17,6 +22,21 @@ public class CrearCorreo extends javax.swing.JFrame {
     public CrearCorreo() {
         initComponents();
     }
+        public DataInputStream flujoDatosEntrada;
+    public DataOutputStream flujoDatosSalida;
+    public String userId;
+    ArrayList<String> destinatarios = new ArrayList<String>();
+    private static DefaultTableModel modelo;
+    private int contador = 0;
+    
+    public void setInfo(DataInputStream DatosEntrada, DataOutputStream DatosSalida, String id){
+        flujoDatosEntrada = DatosEntrada;
+        flujoDatosSalida = DatosSalida;
+        userId = id;
+
+
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -37,6 +57,7 @@ public class CrearCorreo extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
+        jTextField3 = new javax.swing.JTextField();
         fondo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -54,13 +75,10 @@ public class CrearCorreo extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
         jScrollPane1.setViewportView(jTable1);
@@ -69,10 +87,14 @@ public class CrearCorreo extends javax.swing.JFrame {
 
         jButton1.setText("Editar");
         jButton1.setToolTipText("");
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(590, 80, -1, -1));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 120, -1, -1));
 
         jTextField2.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jTextField2.setText("jTextField1");
         getContentPane().add(jTextField2, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 220, 450, 290));
 
         jLabel5.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
@@ -86,7 +108,6 @@ public class CrearCorreo extends javax.swing.JFrame {
         getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 160, -1, -1));
 
         jTextField1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jTextField1.setText("jTextField1");
         getContentPane().add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 160, 450, 30));
 
         jButton2.setBackground(new java.awt.Color(48, 86, 191));
@@ -94,13 +115,53 @@ public class CrearCorreo extends javax.swing.JFrame {
         jButton2.setForeground(java.awt.Color.white);
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/rocket.png"))); // NOI18N
         jButton2.setText("¡Enviar!");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
         getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 380, 210, 90));
+        getContentPane().add(jTextField3, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 90, 260, -1));
 
         fondo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/background.png"))); // NOI18N
         getContentPane().add(fondo, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 900, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        destinatarios.add(jTextField3.getText());
+        if(contador == 0){
+        modelo = new DefaultTableModel();
+        modelo.addColumn("Destinatarios");
+        jTable1.setModel(modelo);
+        }
+        modelo.addRow(new Object[]{jTextField3.getText()});
+        contador = contador +1;        
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        String leo = "SEND EMAIL";
+        System.out.println(leo);
+        for(int x=0;x<destinatarios.size();x++) {
+            if(x == destinatarios.size()-1){
+                leo = "MAIL TO "+destinatarios.get(x)+"*";
+                System.out.println(leo);
+            }else{
+                leo = "MAIL TO "+destinatarios.get(x);
+                System.out.println(leo);
+            }
+        }
+        leo = "MAIL SUBJECT "+jTextField1.getText();
+        System.out.println(leo);
+        leo = "MAIL BODY "+jTextField2.getText();
+        System.out.println(leo);
+        leo = "END SEND MAIL";
+        System.out.println(leo);
+        
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -149,5 +210,6 @@ public class CrearCorreo extends javax.swing.JFrame {
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField jTextField3;
     // End of variables declaration//GEN-END:variables
 }

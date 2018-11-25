@@ -5,6 +5,11 @@
  */
 package ventanas;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import javax.swing.DefaultListModel;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Harim
@@ -17,7 +22,88 @@ public class Correos extends javax.swing.JFrame {
     public Correos() {
         initComponents();
     }
+    public DataInputStream flujoDatosEntrada;
+    public DataOutputStream flujoDatosSalida;
+    public String userId;
+    
+    public void setInfo(DataInputStream DatosEntrada, DataOutputStream DatosSalida, String id){
+        userId = id;
+        String leo;
+           String recibo;
+           Boolean aux = false;
+           String ultimo;
+           String remitente;
+           String Asunto;
+           String Cuerpo;
+           String helper;
+		try{
+                     System.out.println("llego al try:   "+ DatosEntrada );
+                        leo = ("GETNEWMAILS" + " " + userId);
+                        System.out.println("lo que se metio en leo: "+ leo);
+                        DatosSalida.writeUTF(leo);
+                        modelo = new DefaultTableModel();
+                        modelo.addColumn("Remitente");
+                        modelo.addColumn("Asunto");
+                        modelo.addColumn("Mensaje");
+                        jTable1.setModel(modelo);
+                        while (aux == false){
+                        recibo = DatosEntrada.readUTF();
+                        System.out.println(recibo);                        
+                        String[] parts = recibo.split("'");
+                        helper = parts[0];
+                        String[] parts2 = helper.split(" ");
+                        remitente = parts2[4];
+                        Asunto = parts[1];
+                        Cuerpo = parts[3];
+                        modelo.addRow(new Object[]{remitente,Asunto,Cuerpo});
+                        int posicion = recibo.length() - 1;
+                        ultimo = recibo.substring(posicion);
+                       // System.out.println(ultimo);
+                            if(ultimo.equals("*")){
+                                System.out.println("entro");
+                                aux= true;
+                            }
+                        }
+		}catch(Exception e){
+			System.out.println("Excepcion producida :c   "+ e);
+		}
+    }
+    
+    public void setCorreos(){
+           String leo;
+           String recibo;
+           Boolean aux = false;
+           int auxx = 3;
+	 //String ip = "192.168.1.6";
+	 //Socket conexion = null;
+	 //int PUERTO = 1400;
 
+		try{
+                     System.out.println("llego al try " );
+                        leo = ("GETNEWMAILS" + " " + userId);
+                        System.out.println("lo que se metio en leo: "+ leo);
+                        flujoDatosSalida.writeUTF(leo); 
+                        while(3> auxx){
+                          recibo = flujoDatosEntrada.readUTF();
+                          System.out.println(recibo);
+                        }
+                        /*userId = flujoDatosEntrada.readUTF();
+                        String[] parts = userId.split(":");
+                        userId = parts[1].trim(); //
+                        System.out.println("le asigno valor " );
+                        userName = flujoDatosEntrada.readUTF();
+                        String[] parts2 = userName.split(":");
+                        userName = parts2[1].trim(); //                    
+                        System.out.println("Eco1: " + userId);
+                        System.out.println("Eco2: " + userName);
+                        NombreUser.setText(userName);
+                        flujoDatosEntrada = DatosEntrada;
+                        flujoDatosSalida = DatosSalida;*/
+
+		}catch(Exception e){
+			System.out.println("Excepcion producida :c   "+ e);
+		}
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -27,13 +113,18 @@ public class Correos extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jLabel4 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel4.setFont(new java.awt.Font("Arial", 0, 24)); // NOI18N
+        jLabel4.setForeground(java.awt.Color.white);
+        jLabel4.setText("Listado de correos:");
+        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 20, -1, -1));
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -48,19 +139,14 @@ public class Correos extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(jTable1);
 
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 57, 940, 470));
-
-        jLabel4.setFont(new java.awt.Font("Arial", 0, 24)); // NOI18N
-        jLabel4.setForeground(java.awt.Color.white);
-        jLabel4.setText("Listado de correos:");
-        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 20, -1, -1));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 70, 920, 390));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/background.png"))); // NOI18N
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+private static DefaultTableModel modelo;
     /**
      * @param args the command line arguments
      */
