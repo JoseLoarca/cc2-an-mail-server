@@ -3,10 +3,23 @@ import java.io.*;
 import java.util.*;
 
 public class DNSes extends Thread {
-    String ip = "localhost";
-    Socket conexion = null;
-    String leo = null;
-    int puerto = 1200;
+    private String ip = null;
+    private Socket conexion = null;
+    private String leo = null;
+    private final int puerto = 1200;
+    
+    public boolean asigIP(String ip){
+        boolean retorno = false;
+        try{
+            this.ip = ip;
+            retorno true;
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+        return retorno;
+    }
+
+
 
     public void online(){
         try{
