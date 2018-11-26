@@ -9,6 +9,9 @@ package ventanas;
  *
  * @author Harim
  */
+import Main.*;
+import javax.swing.JOptionPane;
+
 public class Usuario extends javax.swing.JFrame {
 
     /**
@@ -49,10 +52,14 @@ public class Usuario extends javax.swing.JFrame {
         jButton1.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/people.png"))); // NOI18N
         jButton1.setText("Agregar Usuario");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
         getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(540, 310, 180, 40));
 
         jTextField1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jTextField1.setText("jTextField1");
         getContentPane().add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 130, 430, 40));
 
         jLabel3.setBackground(new java.awt.Color(255, 255, 51));
@@ -67,7 +74,6 @@ public class Usuario extends javax.swing.JFrame {
         getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, -1, -1));
 
         jTextField2.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jTextField2.setText("jTextField1");
         getContentPane().add(jTextField2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 220, 430, 40));
 
         jLabel5.setBackground(new java.awt.Color(255, 255, 51));
@@ -77,7 +83,6 @@ public class Usuario extends javax.swing.JFrame {
         getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 190, -1, -1));
 
         jTextField3.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jTextField3.setText("jTextField1");
         getContentPane().add(jTextField3, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 300, 430, 40));
 
         jLabel6.setBackground(new java.awt.Color(255, 255, 51));
@@ -105,8 +110,70 @@ public class Usuario extends javax.swing.JFrame {
         // TODO add your handling code here:
         Usuarios menu = new Usuarios();
         menu.setVisible(true);
+        menu.setResizable(false);
         this.setVisible(false);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        String nombre_usuario = this.jTextField1.getText();
+        String correo_usuario = this.jTextField2.getText();
+        String contrasena_usuario = this.jTextField3.getText();
+
+        DB myDb_1 = new DB("servidorcorreo.db");
+        try {
+            try {
+                if (!myDb_1.connect()) {
+                    System.out.println("SERVER : ERROR DE CONEXION CON LA BASE DE DATOS.");
+                } else {
+                    String query_string_2 = "select count(*) as existe from usuario where correo = '" + correo_usuario + "';";
+                    myDb_1.executeQuery(query_string_2, "rsl_existe_3");
+                    String respuesta_5 = "";
+                    while (myDb_1.next("rsl_existe_3")) {
+                        respuesta_5 = myDb_1.getString("existe", "rsl_existe_3") + "";
+                    }
+
+                    if (Integer.parseInt(respuesta_5) > 0) {
+                        System.out.println("SERVER : Ya existe un usuario con esta direccion de correo asociada.");
+                        JOptionPane.showMessageDialog(null, "Ya existe un usuario con esta direccion de correo asociada.", "Error", JOptionPane.INFORMATION_MESSAGE);
+                        this.jTextField1.setText("");
+                        this.jTextField2.setText("");
+                        this.jTextField3.setText("");
+                        
+                    } else {
+
+                        String query_insert_newcont = "insert into usuario (nombre,correo,password,estado)";
+                        query_insert_newcont += "values('" + nombre_usuario + "','" + correo_usuario
+                                + "','" + contrasena_usuario + "',0);";
+                        boolean respuesta_7 = myDb_1.executeNonQuery(query_insert_newcont);
+                        if (respuesta_7) {
+                            System.out.println("SERVER : Usuario guardado exitósamente.");
+                            JOptionPane.showMessageDialog(null, "Usuario guardado exitósamente.", "Error", JOptionPane.INFORMATION_MESSAGE);
+                            this.jTextField1.setText("");
+                            this.jTextField2.setText("");
+                            this.jTextField3.setText("");
+                            Usuarios menu = new Usuarios();
+                            menu.setVisible(true);
+                            menu.setResizable(false);
+                            this.setVisible(false);
+                        } else {
+                            System.out.println("SERVER : Ocurrió un error al momento de guardar el usuario.");
+                            JOptionPane.showMessageDialog(null, "Ocurrió un error al momento de guardar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("SERVER : Ocurrió un error al momento de guardar el usuario.");
+                JOptionPane.showMessageDialog(null, "Ocurrió un error al momento de guardar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                myDb_1.close();
+            }
+        } catch (Exception e) {
+
+            System.out.println("SERVER : Ocurrió un error al momento de guardar el usuario.");
+            JOptionPane.showMessageDialog(null, "Ocurrió un error al momento de guardar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
