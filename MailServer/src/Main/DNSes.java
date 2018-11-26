@@ -6,10 +6,10 @@ import java.util.*;
 
 public class DNSes extends Thread {
 
-    public String ip = "localhost";
-    Socket conexion = null;
-    String leo = null;
-    int puerto = 1200;
+    private String ip = null;
+    private Socket conexion = null;
+    private String leo = null;
+    private final int puerto = 1200;
 
     public boolean ip_configure(String ip_nuevo) {
         boolean retorno = true;

@@ -725,13 +725,6 @@ public class ServidorCliente extends Thread {
                             }
                         }
                         break;
-                    case "EXIT":
-                        /*------------------------------------------------------------------------*/
-                        ingreso = accion;
-                        deServ(salida, "Finalizando conexion");
-                        myDb.close();
-                        /*------------------------------------------------------------------------*/
-                        break;
                     default:
                         deServ(salida, "INVALID COMMAND ERROR");
                         break;
