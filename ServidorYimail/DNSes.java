@@ -7,12 +7,12 @@ public class DNSes extends Thread {
     private Socket conexion = null;
     private String leo = null;
     private final int puerto = 1200;
-    
+    HashMap<String,String> tablaIP = new HashMap<>();
     public boolean asigIP(String ip){
         boolean retorno = false;
         try{
             this.ip = ip;
-            retorno true;
+            retorno = true;
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -28,11 +28,17 @@ public class DNSes extends Thread {
             DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());
             leo = "ONLINE yimail " + ip;
             flujoDatosSalida.writeUTF(leo); 
-            System.out.println(flujoDatosEntrada.readUTF());
+            String vuelta = flujoDatosEntrada.readUTF();
+            if(vuelta.equals("OK ONLINE miaumail")){
+                System.out.println("Se ha conectado al DNS");
+                }else if(vuelta.equals("ONLINE ERROR 301")){
+                    System.out.println("ip no es válida");
+                }  
             conexion.close();
         }catch(Exception e){
             System.out.println("No se puedo crear la conexion");
         }
+
     }
 
     public void offline(){
@@ -42,7 +48,12 @@ public class DNSes extends Thread {
             DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());
             leo = "OFFLINE yimail";
             flujoDatosSalida.writeUTF(leo); 
-            System.out.println(flujoDatosEntrada.readUTF());
+            String vueltaoff = flujoDatosEntrada.readUTF();
+            if(vueltaoff.equals("OFFLINE ERROR 302")){
+            System.out.println("Error offline dns");
+            }else if(vueltaoff.equals("OK OFFLINE miaumail")){
+                System.out.println("Desconectado del dns");
+            }
             conexion.close();
         }catch(Exception e){
             System.out.println("No se puedo crear la conexion");
@@ -56,11 +67,33 @@ public class DNSes extends Thread {
             DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());
             leo = "GETIPTABLE";
             flujoDatosSalida.writeUTF(leo); 
-            System.out.println(flujoDatosEntrada.readUTF());
+            String datos = flujoDatosEntrada.readUTF();
+            while(datos.startsWith("OK IPTABLE")){
+                            if(!datos.endsWith("*")){
+                            String servername = datos.substring(12,datos.indexOf(" ",12));
+                            String ip = datos.substring(datos.indexOf(" ",12)+1);
+                            
+                            tablaIP.put(servername, ip);
+                            datos = flujoDatosEntrada.readLine();
+                            
+                            }else if (datos.endsWith("*")){
+                                String servername = datos.substring(11,datos.indexOf(" ",12));
+                String ip = datos.substring(datos.indexOf(" ",12)+1,datos.indexOf("*")-1);
+                                tablaIP.put(servername, ip);
+                            }
+                        }
+                        if(datos.equals("GETIPTABLE ERROR 303")){
+                            System.out.println("No hay servidores en el DNS");
+                            tablaIP = null;
+                        }
             conexion.close();
         }catch(Exception e){
-            System.out.println("No se puedo crear la conexion");
+            System.out.println(e);
         }
+    }
+
+    public static HashMap getDns(){
+        return tablaIP;
     }
 
     public String checkContact(String verify){

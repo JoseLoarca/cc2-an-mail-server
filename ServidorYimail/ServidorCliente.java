@@ -5,8 +5,8 @@ import java.util.regex.Pattern;
 import java.util.*;
 
 public class ServidorCliente extends Thread {
+    //se crean las variables que se utilizaran
     Socket cliente = null;
-    // InetAddress a = null;
     SocketAddress a = null;
     String ingreso = null;
     String usuario_actual = null;
@@ -15,6 +15,7 @@ public class ServidorCliente extends Thread {
     int contNoop = 0;
     boolean estado = false;
 
+    //se les asigna valor a las variables que se necesitan para iniciar
     public ServidorCliente(Socket cliente) {
         this.cliente = cliente;
         try {
@@ -24,46 +25,64 @@ public class ServidorCliente extends Thread {
             a = null;
         }
     }
-
+    //se crea metodo que tiene como funcion devolver 
     public void deServ(DataOutputStream salida, String valor) {
         try {
+            //envia los datos al usuario
             salida.writeUTF("SERVER : " + valor);
+            //si se realiza correctamente devolvera lo siguiente en consola de servidor
             System.out.println("SERVER : " + valor);
         } catch (Exception e) {
+            //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
             System.out.println(e.getMessage());
         }
     }
-
+    //se crea procedimiento para ejecutar NOOP
     TimerTask timerTask = new TimerTask() {
         public void run() {
             try {
+                //Se instancia una conexion a la base
                 DB myDb2 = new DB("servidorcorreo.db");
+                //Se crea variable necesaria para este procedimiento
                 boolean respuestanop = false;
+                //se verifica que contador NOOP pase o no los 20 segundos
                 if (contNoop > 20) {
                     try {
+                        //Si el contador NOOP pasa los 20 segundos inicia proceso para desconectar al cliente
+                        //verifica que la instancia se pueda conectar a la base o no
                         if (!myDb2.connect()) {
+                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                             System.out.println("ERROR DB CONNECT");
                         } else {
+                            //si se conecta ejecutara el query correspondiente para desconectar al cliente
                             String queryNop = "update usuario set estado='0' where correo='" + usuario_actual + "';";
                             respuestanop = myDb2.executeNonQuery(queryNop);
+                            //verifica que la ejecucion se realice correctamente
                             if (respuestanop) {
+                                //si se realiza correctamente devolvera lo siguiente en consola de servidor
                                 System.out.print("OFFLINE CONNECT CLIENT: ");
                                 System.out.println(cliente);
+                                //detiene thread perteneciente a ese cliente
                                 Thread.currentThread().stop();
                             } else {
+                                //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                                 System.out.println("INVALID OFFLINE");
                             }
                         }
                     } catch (Exception e) {
+                        //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                         System.out.println(e.getMessage());
                         System.out.println("NOOP ERROR UNKNOWN");
                     } finally {
+                        //cierra conexion a la base
                         myDb2.close();
                     }
                 } else {
+                    //en caso de que no hayan pasado 20 segundos el contador aumentará en 1
                     contNoop++;
                 }
             } catch (Exception e) {
+                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                 System.out.println("Ocurrio un error inesperado");
                 System.out.println(e.getMessage());
             }
@@ -71,31 +90,48 @@ public class ServidorCliente extends Thread {
     };
 
     public void run() {
+        //inicia thread
         try {
+            //instancia DataOutputStream para envio de datos al usuario
             DataOutputStream salida = new DataOutputStream(this.cliente.getOutputStream());
             System.out.print("conectado al servidor, direccion: ");
             System.out.println(a);
+            //instancia DataInputStream para recibir datos del usuario
             DataInputStream entrada = new DataInputStream(this.cliente.getInputStream());
             String ingreso = null;
+            //Se instancia una conexion a la base
             DB myDb = new DB("servidorcorreo.db");
+            //inicia ciclo do while para que funcione el cliente
             do {
+                //obtiene los datos que envia el cliente
                 ingreso = entrada.readUTF();
                 System.out.println("CLIENT : " + ingreso);
+                //realiza un split a los datos obtenidos del cliente para poder manejarlos de forma mas sencilla
                 String[] valores = ingreso.split(" ");
+                //realiza un trim a los datos obtenidos del split para evitar inconvenientes con espacios
                 String accion = valores[0].trim();
+                //inicia switch
                 switch (accion) {
+                    //verifica si el valor de la variable accion es VERIFYUSRSERVER
                 case "VERIFYUSRSERVER":
                     /*------------------------------------------------------------------------*/
+                    //se declaran las variables a utilizar en esta seccion
                     String user_caption = "";
                     String servidor_caption = "";
+                    //se verifica si los valores obtenidos al hacer el split de los datos enviados por el cliente componen un length de 3 datos
                     if (valores.length == 3) {
+                        //de ser asi asigna valores
                         user_caption = valores[1].trim();
                         servidor_caption = valores[2].trim();
+                        //verifica que la instancia se pueda conectar a la base o no
                         if (!myDb.connect()) {
+                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
+                                //si logra conectarse verifica que la variable servidor_caption se igual a yimail
                                 if (servidor_caption.equals("yimail")) {
+                                    //de ser asi ejecutara las siguientes consultas a la base
                                     String query = "select count(*) as existe from servidor ";
                                     query += "where lower(nombre) = '" + servidor_caption + "';";
                                     String query2 = "select count(*) as existe from usuario ";
@@ -104,107 +140,142 @@ public class ServidorCliente extends Thread {
                                     myDb.executeQuery(query2, "rs2");
                                     String respuesta = "";
                                     String respuesta2 = "";
+                                    //si las consultas devuelven datos se realizaran los siguiente whiles para ingresar estos en variables
                                     while (myDb.next("rs1")) {
                                         respuesta = myDb.getString("existe", "rs1") + "";
                                     }
                                     while (myDb.next("rs2")) {
                                         respuesta2 = myDb.getString("existe", "rs2") + "";
                                     }
+                                    //verifica que el valor ingresado en las variables sea mayor o igual a 1
                                     if (Integer.parseInt(respuesta) >= 1 && Integer.parseInt(respuesta2) >= 1) {
+                                        //de ser asi realiza un trim a los datos obtenidos del split para evitar inconvenientes con espacios
                                         usuario_actual = valores[1].trim();
+                                        //devuelve al usuario informacion de que su verificacion de correo ha sido satisfactorio
                                         deServ(salida, "OK SERVER VERIFICATE");
                                     } else {
+                                        //de no ser asi devuelve al usuario informacion de que su verificacion de correo no ha sido satisfactorio
                                         deServ(salida, "ERROR NOT SERVER FOUND");
                                     }
                                 }
                                 // agregar la consulta a otro servidor
                             } catch (Exception e) {
+                                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                 System.out.println(e.getMessage());
                             } finally {
+                                //cierra conexion a la base
                                 myDb.close();
                             }
                         }
                     } else {
+                        // de no ser asi devuelve al usuario el siguiente error
                         deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
                 case "LOGIN":
                     /*------------------------------------------------------------------------*/
+                    //se declaran las variables a utilizar en esta seccion
                     String user_caption_log = "";
                     String pasword_caption_log = "";
+                    //se verifica si los valores obtenidos al hacer el split de los datos enviados por el cliente componen un length de 3 datos
                     if (valores.length == 3) {
+                        //de ser asi asigna valores
                         user_caption_log = valores[1].trim();
                         pasword_caption_log = valores[2].trim();
-
+                        //verifica que la instancia se pueda conectar a la base o no
                         if (!myDb.connect()) {
+                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
+                                //si logra conectarse ejecutara las siguiente consulta a la base
                                 String query = "select count(*) as existe from usuario ";
                                 query += "where correo = '" + user_caption_log + "' and ";
                                 query += "password = '" + pasword_caption_log + "';";
                                 myDb.executeQuery(query, "rs1");
                                 String respuesta = "";
+                                //si la consulta devuelve datos se realizara el siguiente while para ingresar esta en variable
                                 while (myDb.next("rs1")) {
                                     respuesta = myDb.getString("existe", "rs1") + "";
                                 }
+                                //verifica que el valor ingresado en las variables sea mayor o igual a 1
                                 if (Integer.parseInt(respuesta) >= 1) {
+                                    //de ser asi ejecutara las siguiente consulta a la base
                                     String query2 = "select count(*) as existe from usuario ";
                                     query2 += "where correo = '" + user_caption_log + "' and ";
                                     query2 += " password = '" + pasword_caption_log + "';";
                                     myDb.executeQuery(query2, "rsl2");
                                     String respuesta_2 = "";
+                                    //si la consulta devuelve datos se realizara el siguiente while para ingresar esta en variable
                                     while (myDb.next("rsl2")) {
                                         respuesta_2 = myDb.getString("existe", "rsl2") + "";
                                     }
+                                    //verifica que el valor ingresado en las variables sea mayor o igual a 1
                                     if (Integer.parseInt(respuesta_2) >= 1) {
+                                        //de ser asi ejecutara el siguiente update en la base
                                         String query3 = "update usuario set estado='1' where correo='"
                                                 + user_caption_log + "' and password='" + pasword_caption_log + "';";
                                         boolean respuesta_3 = myDb.executeNonQuery(query3);
+                                        //verifica que la ejecucion sea satisfactoria
                                         if (respuesta_3) {
+                                            //de ser asi devuelve al usuario informacion de que su login ha sido satisfactorio
                                             deServ(salida, "OK LOGIN");
                                         } else {
+                                            //de no ser asi devuelve al usuario informacion de que su login no ha sido satisfactorio
                                             deServ(salida, "LOGIN ERROR UNKNOWN");
                                         }
                                     } else {
+                                        //de no ser asi devuelve al usuario el siguiente error
                                         deServ(salida, "LOGIN ERROR 102");
                                     }
                                 } else {
+                                    //de no ser asi devuelve al usuario el siguiente error
                                     deServ(salida, "LOGIN ERROR 101");
                                 }
 
                             } catch (Exception e) {
+                                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                 System.out.println(e.getMessage());
                                 deServ(salida, "LOGIN ERROR UNKNOWN");
                             } finally {
+                                //cierra conexion a la base
                                 myDb.close();
                             }
                         }
                     } else {
+                        // de no ser asi devuelve al usuario el siguiente error
                         deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
                     break;
                 case "CLIST":
+                    //se declaran las variables a utilizar en esta seccion
                     /*------------------------------------------------------------------------*/
                     String user_caption_log_list = "";
+                    //se verifica si los valores obtenidos al hacer el split de los datos enviados por el cliente componen un length de 2 datos
                     if (valores.length == 2) {
+                        //de ser asi asigna valores
                         user_caption_log_list = valores[1].trim();
-
+                        //verifica que la instancia se pueda conectar a la base o no
                         if (!myDb.connect()) {
+                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
+                                //si logra conectarse ejecutara las siguiente consulta a la base
                                 String query3 = "";
                                 String query = "select count(*) as cantidad_contactos from contacto ";
                                 query += "where idusuariopersonal = '" + user_caption_log_list + "';";
                                 myDb.executeQuery(query, "rsl_cantidad");
                                 String respuesta_3 = "";
+                                //si la consulta devuelve datos se realizara el siguiente while para ingresar esta en variable
                                 while (myDb.next("rsl_cantidad")) {
                                     respuesta_3 = myDb.getString("cantidad_contactos", "rsl_cantidad") + "";
                                 }
+                                //verifica que el valor ingresado en las variables sea mayor a 0
                                 if (Integer.parseInt(respuesta_3) > 0) {
+                                     //de ser asi ejecutara las siguiente consulta a la base
                                     String query2 = "select usuario.correo as user_correo, servidor.nombre as nombre_server  from contacto ";
                                     query2 += "inner join usuario, servidor";
                                     query2 += " on contacto.idusuariocontacto = usuario.idusuario ";
@@ -212,6 +283,7 @@ public class ServidorCliente extends Thread {
                                     query2 += "and contacto.idusuariopersonal = '" + user_caption_log_list + "';";
                                     myDb.executeQuery(query2, "rsl_contactos");
                                     Integer cont_aux = 1;
+                                    
                                     while (myDb.next("rsl_contactos")) {
                                         if (cont_aux.equals(Integer.parseInt(respuesta_3))) {
                                             deServ(salida, "OK CLIST " + myDb.getString("user_correo", "rsl_contactos")
@@ -226,13 +298,16 @@ public class ServidorCliente extends Thread {
                                     deServ(salida, "CLIST ERROR 103");
                                 }
                             } catch (Exception e) {
+                                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                 System.out.println(e.getMessage());
                                 deServ(salida, "CLIST ERROR UNKNOWN");
                             } finally {
+                                //cierra conexion a la base
                                 myDb.close();
                             }
                         }
                     } else {
+                        // de no ser asi devuelve al usuario el siguiente error
                         deServ(salida, "INVALID COMMAND ERROR");
                     }
                     /*------------------------------------------------------------------------*/
@@ -242,7 +317,9 @@ public class ServidorCliente extends Thread {
                     String user_caption_log_mails = "";
                     if (valores.length == 2) {
                         user_caption_log_mails = valores[1].trim();
+                        //verifica que la instancia se pueda conectar a la base o no
                         if (!myDb.connect()) {
+                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
@@ -281,9 +358,11 @@ public class ServidorCliente extends Thread {
                                     deServ(salida, "OK GETNEWMAILS NOMAILS");
                                 }
                             } catch (Exception e) {
+                                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                 System.out.println(e.getMessage());
                                 deServ(salida, "GETNEWMAILS ERROR UNKNOWN");
                             } finally {
+                                //cierra conexion a la base
                                 myDb.close();
                             }
                         }
@@ -299,8 +378,9 @@ public class ServidorCliente extends Thread {
                     if (valores.length == 3) {
                         user_caption_id = valores[1].trim();
                         password_caption_id = valores[2].trim();
-
+                        //verifica que la instancia se pueda conectar a la base o no
                         if (!myDb.connect()) {
+                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
@@ -328,9 +408,11 @@ public class ServidorCliente extends Thread {
                                     deServ(salida, "GETID NOT FOUND");
                                 }
                             } catch (Exception e) {
+                                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                 System.out.println(e.getMessage());
                                 deServ(salida, "GETID ERROR UNKNOWN");
                             } finally {
+                                //cierra conexion a la base
                                 myDb.close();
                             }
                         }
@@ -344,7 +426,9 @@ public class ServidorCliente extends Thread {
                     String user_caption_logout = "";
                     if (valores.length == 2) {
                         user_caption_logout = valores[1].trim();
+                        //verifica que la instancia se pueda conectar a la base o no
                         if (!myDb.connect()) {
+                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
@@ -358,9 +442,11 @@ public class ServidorCliente extends Thread {
                                     deServ(salida, "LOGOUT ERROR UNKNOWN");
                                 }
                             } catch (Exception e) {
+                                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                 System.out.println(e.getMessage());
                                 deServ(salida, "LOGOUT ERROR UNKNOWN");
                             } finally {
+                                //cierra conexion a la base
                                 myDb.close();
                             }
                         }
@@ -375,7 +461,9 @@ public class ServidorCliente extends Thread {
                     String correo_caption = "";
                     if (valores.length == 2) {
                         correo_caption = valores[1].trim();
+                        //verifica que la instancia se pueda conectar a la base o no
                         if (!myDb.connect()) {
+                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
                             try {
@@ -436,9 +524,11 @@ public class ServidorCliente extends Thread {
                                     }
                                 }
                             } catch (Exception e) {
+                                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                 System.out.println(e.getMessage());
                                 deServ(salida, "NEWCONT ERROR UNKNOWN");
                             } finally {
+                                //cierra conexion a la base
                                 myDb.close();
                             }
                         }
@@ -478,8 +568,9 @@ public class ServidorCliente extends Thread {
                                                     if (valore_quita_cadena[0].trim().equals("END")
                                                             && valore_quita_cadena[1].trim().equals("SEND")
                                                             && valore_quita_cadena[2].trim().equals("MAIL")) {
-
+                                                        //verifica que la instancia se pueda conectar a la base o no
                                                         if (!myDb.connect()) {
+                                                            //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                                                             deServ(salida, "ERROR_DB_CONECTIONS");
                                                         } else {
                                                             try {
@@ -537,9 +628,11 @@ public class ServidorCliente extends Thread {
                                                                 }
 
                                                             } catch (Exception e) {
+                                                                //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                                                 System.out.println(e.getMessage());
                                                                 deServ(salida, "SEND MAIL ERROR UNKNOWN");
                                                             } finally {
+                                                                //cierra conexion a la base
                                                                 myDb.close();
                                                             }
                                                         }
@@ -610,8 +703,9 @@ public class ServidorCliente extends Thread {
                                                                         + user_server_dest);
                                                                 String[] correo_local2 = user_server_dest.split("@");
                                                                 if (correo_local2[1].equals("yimail")) {
-
+                                                                    //verifica que la instancia se pueda conectar a la base o no
                                                                     if (!myDb.connect()) {
+                                                                        //En caso de que no lo logre devolvera el siguiente error en consola de servidor
                                                                         deServ(salida, "ERROR_DB_CONECTIONS");
                                                                     } else {
                                                                         try {
@@ -676,9 +770,11 @@ public class ServidorCliente extends Thread {
                                                                             }
 
                                                                         } catch (Exception e) {
+                                                                            //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
                                                                             System.out.println(e.getMessage());
                                                                             deServ(salida, "SEND MAIL ERROR UNKNOWN");
                                                                         } finally {
+                                                                            //cierra conexion a la base
                                                                             myDb.close();
                                                                         }
                                                                     }
@@ -728,6 +824,7 @@ public class ServidorCliente extends Thread {
                     /*------------------------------------------------------------------------*/
                     ingreso = accion;
                     deServ(salida, "Finalizando conexion");
+                    //cierra conexion a la base
                     myDb.close();
                     /*------------------------------------------------------------------------*/
                     break;
@@ -737,13 +834,16 @@ public class ServidorCliente extends Thread {
                 }
             } while (!ingreso.equals("EXIT"));
         } catch (Exception e) {
+            //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
             System.out.println("Ocurrio un error inesperado");
             System.out.println(e.getMessage());
         }
         try {
             System.out.println("cerrando..");
+            //cierra conexion a la base
             cliente.close();
         } catch (Exception e) {
+            //En caso de que exita una excepcion en la ejecucion devolvera el siguiente error en consola de servidor
             System.out.println(e.getMessage());
         }
     }
