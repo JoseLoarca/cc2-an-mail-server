@@ -344,7 +344,6 @@ public class ServidorCliente extends Thread {
                     String user_caption_logout = "";
                     if (valores.length == 2) {
                         user_caption_logout = valores[1].trim();
-
                         if (!myDb.connect()) {
                             deServ(salida, "ERROR_DB_CONECTIONS");
                         } else {
@@ -354,6 +353,7 @@ public class ServidorCliente extends Thread {
                                 boolean respuesta_3 = myDb.executeNonQuery(query3);
                                 if (respuesta_3) {
                                     deServ(salida, "OK LOGOUT");
+                                    Thread.currentThread().stop();
                                 } else {
                                     deServ(salida, "LOGOUT ERROR UNKNOWN");
                                 }
