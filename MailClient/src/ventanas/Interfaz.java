@@ -9,6 +9,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
 import javax.swing.JOptionPane;
+import static main.MailClient.flujoDatosEntrada;
+import static main.MailClient.flujoDatosSalida;
 
 /**
  *
@@ -32,9 +34,11 @@ public class Interfaz extends javax.swing.JFrame {
     public String userId;
     public String username;
     public String userName;
+    public Socket conexion;
     
-    public void setUserId(String user, String password, DataInputStream DatosEntrada, DataOutputStream DatosSalida){
+    public void setUserId(String user, String password, DataInputStream DatosEntrada, DataOutputStream DatosSalida, Socket conexion){
         String leo;
+        this.conexion = conexion;
 	 //String ip = "192.168.1.6";
 	 //Socket conexion = null;
 	 //int PUERTO = 1400;
@@ -85,6 +89,7 @@ public class Interfaz extends javax.swing.JFrame {
         jButton3 = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         NombreUser = new javax.swing.JLabel();
+        jButton4 = new javax.swing.JButton();
         fondoImagen = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -139,6 +144,14 @@ public class Interfaz extends javax.swing.JFrame {
         NombreUser.setText("Nombre del Usuario");
         getContentPane().add(NombreUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 10, -1, -1));
 
+        jButton4.setText("Logout");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(760, 500, -1, -1));
+
         fondoImagen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/fondo.PNG"))); // NOI18N
         getContentPane().add(fondoImagen, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
@@ -165,6 +178,14 @@ public class Interfaz extends javax.swing.JFrame {
         menu.setInfo(flujoDatosEntrada, flujoDatosSalida, userId);
         menu.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+            Login  login = new Login();
+            login.setInfo(flujoDatosEntrada, flujoDatosSalida, conexion);
+            login.setVisible(true);
+            this.setVisible(false);
+    }//GEN-LAST:event_jButton4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -207,6 +228,7 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
