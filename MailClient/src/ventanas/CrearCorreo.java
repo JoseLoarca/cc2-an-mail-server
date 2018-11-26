@@ -12,7 +12,6 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
- *
  * @author Harim
  */
 public class CrearCorreo extends javax.swing.JFrame {
@@ -23,19 +22,20 @@ public class CrearCorreo extends javax.swing.JFrame {
     public CrearCorreo() {
         initComponents();
     }
-        public DataInputStream flujoDatosEntrada;
+
+    public DataInputStream flujoDatosEntrada;
     public DataOutputStream flujoDatosSalida;
     public String userId;
     ArrayList<String> destinatarios = new ArrayList<String>();
     private static DefaultTableModel modelo;
     private int contador = 0;
-    
-    public void setInfo(DataInputStream DatosEntrada, DataOutputStream DatosSalida, String id){
+
+    public void setInfo(DataInputStream DatosEntrada, DataOutputStream DatosSalida, String id) {
         flujoDatosEntrada = DatosEntrada;
         flujoDatosSalida = DatosSalida;
         userId = id;
     }
-    
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -73,12 +73,12 @@ public class CrearCorreo extends javax.swing.JFrame {
         getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, -1, -1));
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
+                },
+                new String[]{
 
-            }
+                }
         ));
         jScrollPane1.setViewportView(jTable1);
 
@@ -128,105 +128,119 @@ public class CrearCorreo extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Verifica y añade un usuario a la lista de destinatarios
+     *
+     * @param evt
+     */
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        
+
         String leo;
-           String recibo;
-           String aux;
-           String username;
-           String server;
-        		try{
-                        aux = jTextField3.getText();
-                        String[] parts = aux.split("@");
-                        username= parts[0];
-                        server = parts[1];
-                        System.out.println("llego al try:   "+ flujoDatosEntrada );
-                        leo = ("VERIFYUSRSERVER" +" "+ username +" "+ server);
-                        System.out.println("lo que se metio en leo: "+ leo);
-                        flujoDatosSalida.writeUTF(leo);
-                        recibo = flujoDatosEntrada.readUTF();
-                        System.out.println(recibo); 
-                        switch(recibo) {
-                    case "SERVER : OK SERVER VERIFICATE":
-                          destinatarios.add(jTextField3.getText());
-                           if(contador == 0){
-                           modelo = new DefaultTableModel();
-                           modelo.addColumn("Destinatarios");
-                          jTable1.setModel(modelo);
-                           }
-                              modelo.addRow(new Object[]{jTextField3.getText()});
-                              contador = contador +1;
-                        break;
-                    case "SERVER : LOGIN ERROR 102":
-                        JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                       // conexion.close();
-                        break;
-                    case "SERVER : LOGIN ERROR 101":
-                        JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                       // conexion.close();
-                        break;
-                    default:
-                        JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                       // conexion.close();
-                        break;
-                }
-                        }catch(Exception e){
-			System.out.println("Excepcion producida :c   "+ e);
-		}
-        
+        String recibo;
+        String aux;
+        String username;
+        String server;
+        try {
+            aux = jTextField3.getText();
+            String[] parts = aux.split("@");
+            username = parts[0];
+            server = parts[1];
+            System.out.println("llego al try:   " + flujoDatosEntrada);
+            leo = ("VERIFYUSRSERVER" + " " + username + " " + server);
+            System.out.println("lo que se metio en leo: " + leo);
+            flujoDatosSalida.writeUTF(leo);
+            recibo = flujoDatosEntrada.readUTF();
+            System.out.println(recibo);
+            switch (recibo) {
+                case "SERVER : OK SERVER VERIFICATE":
+                    destinatarios.add(jTextField3.getText());
+                    if (contador == 0) {
+                        modelo = new DefaultTableModel();
+                        modelo.addColumn("Destinatarios");
+                        jTable1.setModel(modelo);
+                    }
+                    modelo.addRow(new Object[]{jTextField3.getText()});
+                    contador = contador + 1;
+                    break;
+                case "SERVER : LOGIN ERROR 102":
+                    JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                    // conexion.close();
+                    break;
+                case "SERVER : LOGIN ERROR 101":
+                    JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                    // conexion.close();
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                    // conexion.close();
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("Excepcion producida :c   " + e);
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
-        private boolean validFields() {
+    /**
+     * Valida que los campos no esten vacios
+     *
+     * @return boolean Si los campos estan vacios devuelve false, de lo contrario true
+     */
+    private boolean validFields() {
         if (jTextField1.getText().isEmpty() || jTextField2.getText().isEmpty() ||
                 jTextField1.getText().trim().equals("") || jTextField2.getText().trim().equals("") || destinatarios.isEmpty()) {
             return false;
         }
-        
+
         return true;
     }
-    
+
+    /**
+     * Envia el email al servidor
+     *
+     * @param evt
+     */
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
 
         String recibo;
-        		try{
+        try {
 
-                        if(validFields()){
-            String leo = "SEND MAIL";
-        System.out.println(leo);
-        flujoDatosSalida.writeUTF(leo); 
-        for(int x=0;x<destinatarios.size();x++) {
-            if(x == destinatarios.size()-1){
-                leo = "MAIL TO "+destinatarios.get(x)+" *";
+            if (validFields()) {
+                String leo = "SEND MAIL";
                 System.out.println(leo);
-                flujoDatosSalida.writeUTF(leo); 
-            }else{
-                leo = "MAIL TO "+destinatarios.get(x);
+                flujoDatosSalida.writeUTF(leo);
+                for (int x = 0; x < destinatarios.size(); x++) {
+                    if (x == destinatarios.size() - 1) {
+                        leo = "MAIL TO " + destinatarios.get(x) + " *";
+                        System.out.println(leo);
+                        flujoDatosSalida.writeUTF(leo);
+                    } else {
+                        leo = "MAIL TO " + destinatarios.get(x);
+                        System.out.println(leo);
+                        flujoDatosSalida.writeUTF(leo);
+                    }
+                }
+                leo = "MAIL SUBJECT " + jTextField1.getText();
                 System.out.println(leo);
-                flujoDatosSalida.writeUTF(leo); 
+                flujoDatosSalida.writeUTF(leo);
+                leo = "MAIL BODY " + jTextField2.getText();
+                System.out.println(leo);
+                flujoDatosSalida.writeUTF(leo);
+                leo = "END"
+                        + "SEND MAIL";
+                System.out.println(leo);
+                flujoDatosSalida.writeUTF(leo);
+                recibo = flujoDatosEntrada.readUTF();
+                System.out.println(recibo);
+            } else {
+                JOptionPane.showMessageDialog(null, "No lleno todos los campos...", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        } catch (Exception e) {
+            System.out.println("Excepcion producida :c   " + e);
         }
-        leo = "MAIL SUBJECT "+jTextField1.getText();
-        System.out.println(leo);
-        flujoDatosSalida.writeUTF(leo); 
-        leo = "MAIL BODY "+jTextField2.getText();
-        System.out.println(leo);
-        flujoDatosSalida.writeUTF(leo); 
-        leo = "END"
-                + "SEND MAIL";
-        System.out.println(leo);
-        flujoDatosSalida.writeUTF(leo); 
-        recibo = flujoDatosEntrada.readUTF();
-        System.out.println(recibo);
-        } else{
-            JOptionPane.showMessageDialog(null, "No lleno todos los campos...", "Error", JOptionPane.ERROR_MESSAGE);
-        }  
-		}catch(Exception e){
-			System.out.println("Excepcion producida :c   "+ e);
-		}
-             
-        
-        
+
+
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
@@ -236,7 +250,7 @@ public class CrearCorreo extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {

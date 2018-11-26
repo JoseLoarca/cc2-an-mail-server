@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package ventanas;
+
 import java.io.*;
 import java.net.*;
 import java.util.logging.Level;
@@ -11,7 +12,6 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
- *
  * @author Harim
  */
 public class Login extends javax.swing.JFrame {
@@ -20,13 +20,22 @@ public class Login extends javax.swing.JFrame {
     public DataOutputStream flujoDatosSalida;
     public String userId;
     public Socket conexion;
-    
+
+    /**
+     * Persiste una conexion previamente establecida y sus metodos para transmitir y recibir mensajes
+     *
+     * @param DataInputStream input
+     * @param DataOutputStream output
+     * @param Socket conexion
+     *
+     * @return void
+     */
     public void setInfo(DataInputStream input, DataOutputStream output, Socket conexion) {
         flujoDatosEntrada = input;
         flujoDatosSalida = output;
         this.conexion = conexion;
     }
-    
+
     /**
      * Creates new form Login
      */
@@ -135,34 +144,44 @@ public class Login extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Valida que los campos de login no esten vacios antes de ser enviados
+     *
+     * @return boolean Si los campos son validos devuelve true, de lo contrario false
+     */
     public boolean validFields() {
-        if(jTextField1.getText().isEmpty() || jPasswordField1.getText().isEmpty() ||
+        if (jTextField1.getText().isEmpty() || jPasswordField1.getText().isEmpty() ||
                 jTextField1.getText().trim().equals("") || jPasswordField1.getText().trim().equals("")) {
             return false;
         }
         return true;
     }
-    
+
+    /**
+     * Envia y procesa el comando de login
+     *
+     * @param evt
+     */
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         String user = jTextField1.getText().toLowerCase();
         String password = jPasswordField1.getText().toLowerCase();
-        if( ! validFields()){
-           JOptionPane.showMessageDialog(null, "Por favor complete ambos campos.", "Error", JOptionPane.ERROR_MESSAGE);
-        }else{
+        if (!validFields()) {
+            JOptionPane.showMessageDialog(null, "Por favor complete ambos campos.", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
             String leo;
-            
-            try{
-               String aux = jTextField1.getText();
-                        String[] parts = aux.split("@");
-                        String username= parts[0];
-                        String server = parts[1];
+
+            try {
+                String aux = jTextField1.getText();
+                String[] parts = aux.split("@");
+                String username = parts[0];
+                String server = parts[1];
                 if (verifyUserServer(flujoDatosEntrada, flujoDatosSalida, username, server)) {
-                    leo = ("LOGIN" + " " + parts[0] +" "+ password);
-                    flujoDatosSalida.writeUTF(leo); 
+                    leo = ("LOGIN" + " " + parts[0] + " " + password);
+                    flujoDatosSalida.writeUTF(leo);
                     String response = flujoDatosEntrada.readUTF();
 
-                    switch(response) {
+                    switch (response) {
                         case "SERVER : OK LOGIN":
                             Interfaz menu = new Interfaz();
                             menu.setUsername(username);
@@ -187,18 +206,19 @@ public class Login extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(null, "El usuario ingresado no existe en el servidor.", "Error", JOptionPane.ERROR_MESSAGE);
                     conexion.close();
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 try {
                     conexion.close();
                 } catch (IOException ex) {
                     System.out.println("No se puedo crear la conexion");
                 }
-		System.out.println("No se puedo crear la conexion");
+                System.out.println("No se puedo crear la conexion");
             }
-       }
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
+     * Verifica que el usuario que intenta loguearse pertenezca al servidor
      *
      * @param flujoDatosEntrada
      * @param flujoDatosSalida
@@ -208,39 +228,45 @@ public class Login extends javax.swing.JFrame {
      */
     public boolean verifyUserServer(DataInputStream flujoDatosEntrada, DataOutputStream flujoDatosSalida, String user, String server) {
         boolean verify = false;
-        
+
         String reqStr = ("VERIFYUSRSERVER " + user + " " + server);
-        
+
         System.out.println("Enviar: " + reqStr);
-        
+
         try {
             flujoDatosSalida.writeUTF(reqStr);
-            
+
             String response = flujoDatosEntrada.readUTF();
-            
+
             System.out.println("Respuesta: " + response);
-            
-            switch(response) {
-                case "SERVER : OK SERVER VERIFICATE": 
+
+            switch (response) {
+                case "SERVER : OK SERVER VERIFICATE":
                     verify = true;
                     break;
                 default:
                     break;
             }
-            
+
             return verify;
-            
+
         } catch (IOException ex) {
             System.out.println("Ocurrio un error al enviar los datos: " + ex);
         }
-        
+
         return verify;
     }
-    
+
+    /**
+     * Deshabilita el boton de login
+     *
+     * @return void
+     *
+     */
     public void disableLoginButton() {
         jButton2.setEnabled(false);
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -248,7 +274,7 @@ public class Login extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {

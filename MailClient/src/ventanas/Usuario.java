@@ -22,7 +22,14 @@ public class Usuario extends javax.swing.JFrame {
     public DataOutputStream flujoDatosSalida;
     public String userId;
     public String reqStr;
-    
+
+    /**
+     * Persiste el id del usuario y los metodos para transmitir y recibir mensajes a traves de una conexion previamente realizada
+     *
+     * @param DataInputStream input
+     * @param DataOutputStream output
+     * @param String id
+     */
     public void setInfo(DataInputStream input, DataOutputStream output, String id) {
         flujoDatosEntrada = input;
         flujoDatosSalida = output;
@@ -110,6 +117,11 @@ public class Usuario extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_UserInputActionPerformed
 
+    /**
+     * Verifica que los inputs sean validos
+     *
+     * @return boolean Si el contenido de los inputs es valido devuelve true, de lo contario false
+     */
     private boolean validFields() {
         if (UserInput.getText().isEmpty() || ServerInput.getText().isEmpty() ||
                 UserInput.getText().trim().equals("") || ServerInput.getText().trim().equals("")) {
@@ -118,7 +130,12 @@ public class Usuario extends javax.swing.JFrame {
         
         return true;
     }
-    
+
+    /**
+     * Envia y procesa el comando de NEWCONT
+     *
+     * @param evt
+     */
     private void AddContactBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddContactBtnActionPerformed
         // TODO add your handling code here:
         String contact = UserInput.getText();

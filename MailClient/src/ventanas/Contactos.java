@@ -19,7 +19,16 @@ public class Contactos extends javax.swing.JFrame {
     public DataOutputStream flujoDatosSalida;
     public String userId;
     public String reqStr;
-    
+
+    /**
+     * Persiste el id del usuario y los metodos para enviar y recibir datos por medio de una conexion previamente realizada
+     *
+     * @param DataInputStream input
+     * @param DataOutputStream output
+     * @param String id
+     *
+     * @return void
+     */
     public void setInfo(DataInputStream input, DataOutputStream output, String id) {
         flujoDatosEntrada = input;
         flujoDatosSalida = output;
@@ -139,6 +148,11 @@ public class Contactos extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Abre menu nuevo contacto
+     *
+     * @param evt
+     */
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         Usuario menu = new Usuario();

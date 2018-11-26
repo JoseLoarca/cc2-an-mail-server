@@ -9,11 +9,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
 import javax.swing.JOptionPane;
+
 import static main.MailClient.flujoDatosEntrada;
 import static main.MailClient.flujoDatosSalida;
 
 /**
- *
  * @author Harim
  */
 public class Interfaz extends javax.swing.JFrame {
@@ -24,52 +24,58 @@ public class Interfaz extends javax.swing.JFrame {
     public Interfaz() {
         initComponents();
     }
+
     public int idUser;
-    public void setUsername(String user){
+
+    public void setUsername(String user) {
         username = user;
         NombreUser.setText(username);
     }
+
     public DataInputStream flujoDatosEntrada;
     public DataOutputStream flujoDatosSalida;
     public String userId;
     public String username;
     public String userName;
     public Socket conexion;
-    
-    public void setUserId(String user, String password, DataInputStream DatosEntrada, DataOutputStream DatosSalida, Socket conexion){
+
+    /**
+     * Persiste el nombre de usuario, contraseña, la conexion previamente realiza, y los metodos para poder enviar y recibir datos a traves de la conexion
+     *
+     * @param String user
+     * @param String password
+     * @param DataInputStream DatosEntrada
+     * @param DataOutputStream DatosSalida
+     * @param Socket conexion
+     *
+     * @return void
+     */
+    public void setUserId(String user, String password, DataInputStream DatosEntrada, DataOutputStream DatosSalida, Socket conexion) {
         String leo;
         this.conexion = conexion;
-	 //String ip = "192.168.1.6";
-	 //Socket conexion = null;
-	 //int PUERTO = 1400;
 
-		try{
-                     System.out.println("llego al try " );
-			//conexion = new Socket(ip,PUERTO);
-			//DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
-			//DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
-			
-                      //  System.out.println("ingrese informacion a enviar al servidor");
-                        leo = ("GETID" + " " + user +" "+ password);
-                        System.out.println("lo que se metio en leo: "+ leo);
-                        DatosSalida.writeUTF(leo); 
-                        userId = DatosEntrada.readUTF();
-                        String[] parts = userId.split(":");
-                        userId = parts[1].trim(); //
-                        System.out.println("le asigno valor " );
-                        userName = DatosEntrada.readUTF();
-                        String[] parts2 = userName.split(":");
-                        userName = parts2[1].trim(); //                    
-                        System.out.println("Eco1: " + userId);
-                        System.out.println("Eco2: " + userName);
-                        NombreUser.setText(userName);
-                        flujoDatosEntrada = DatosEntrada;
-                        flujoDatosSalida = DatosSalida;
-                        
+        try {
+            System.out.println("llego al try ");
+            leo = ("GETID" + " " + user + " " + password);
+            System.out.println("lo que se metio en leo: " + leo);
+            DatosSalida.writeUTF(leo);
+            userId = DatosEntrada.readUTF();
+            String[] parts = userId.split(":");
+            userId = parts[1].trim(); //
+            System.out.println("le asigno valor ");
+            userName = DatosEntrada.readUTF();
+            String[] parts2 = userName.split(":");
+            userName = parts2[1].trim(); //
+            System.out.println("Eco1: " + userId);
+            System.out.println("Eco2: " + userName);
+            NombreUser.setText(userName);
+            flujoDatosEntrada = DatosEntrada;
+            flujoDatosSalida = DatosSalida;
 
-		}catch(Exception e){
-			System.out.println("Excepcion producida :c   ");
-		}
+
+        } catch (Exception e) {
+            System.out.println("Excepcion producida :c   ");
+        }
     }
 
     /**
@@ -158,6 +164,11 @@ public class Interfaz extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Abre ventana correos
+     *
+     * @param evt
+     */
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
         Correos menu = new Correos();
@@ -165,6 +176,11 @@ public class Interfaz extends javax.swing.JFrame {
         menu.setVisible(true);
     }//GEN-LAST:event_jButton3ActionPerformed
 
+    /**
+     * Abre ventana crear correos
+     *
+     * @param evt
+     */
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         CrearCorreo menu = new CrearCorreo();
@@ -172,6 +188,11 @@ public class Interfaz extends javax.swing.JFrame {
         menu.setVisible(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    /**
+     * Abre ventana contactos
+     *
+     * @param evt
+     */
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         Contactos menu = new Contactos();
@@ -179,12 +200,16 @@ public class Interfaz extends javax.swing.JFrame {
         menu.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    /**
+     * Abre ventana login
+     * @param evt
+     */
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // TODO add your handling code here:
-            Login  login = new Login();
-            login.setInfo(flujoDatosEntrada, flujoDatosSalida, conexion);
-            login.setVisible(true);
-            this.setVisible(false);
+        Login login = new Login();
+        login.setInfo(flujoDatosEntrada, flujoDatosSalida, conexion);
+        login.setVisible(true);
+        this.setVisible(false);
     }//GEN-LAST:event_jButton4ActionPerformed
 
     /**
@@ -194,7 +219,7 @@ public class Interfaz extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {

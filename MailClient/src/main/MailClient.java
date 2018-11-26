@@ -26,7 +26,11 @@ public class MailClient {
     public static DataOutputStream flujoDatosSalida;
     static Login login;
     static Socket conexion = null;
-    
+
+
+    /**
+     * Metodo para ejecutar la tarea programada de comando NOOP entre cliente y servidor.
+     */
     static TimerTask timerTask = new TimerTask() {
         public void run() {
             
@@ -57,7 +61,12 @@ public class MailClient {
             }
         }
     };
-    
+
+    /**
+     * Main
+     *
+     * @param String[] args
+     */
     public static void main(String[] args) {
         Timer timer = new Timer();
         String leo;
@@ -65,10 +74,13 @@ public class MailClient {
         int PUERTO = 1400;
          
         try{
+            //Realizamos nueva conexion a la ip y puerto especificados
             conexion = new Socket(ip,PUERTO);
             flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
             flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
-            
+
+
+            //Si la conexion fue realizada exitosamente mostramos ventana login y programamos comando NOOP.
             login = new Login();
             login.setInfo(flujoDatosEntrada, flujoDatosSalida, conexion);
             login.setVisible(true);
