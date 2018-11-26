@@ -5,17 +5,79 @@
  */
 package ventanas;
 
+import Main.*;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Harim
  */
 public class Usuarios extends javax.swing.JFrame {
 
+    DefaultTableModel modeloLista = new DefaultTableModel();
+
+    public void llenarTabla() {
+
+        ArrayList<Object> columna = new ArrayList<Object>();
+        columna.add("ID USUARIO");
+        columna.add("NOMBRE");
+        columna.add("CORREO");
+        columna.add("CONTRASEÑA");
+        columna.add("ESTADO");
+
+        for (Object col : columna) {
+            modeloLista.addColumn(col);
+        }
+
+        this.jTable1.setModel(modeloLista);
+        ArrayList<Object[]> usuario = new ArrayList<Object[]>();
+
+        DB myDb_1 = new DB("servidorcorreo.db");
+        try {
+            try {
+                if (!myDb_1.connect()) {
+                    System.out.println("SERVER : ERROR DE CONEXION CON LA BASE DE DATOS.");
+                } else {
+                    String query_string_2 = "select * from usuario;";
+                    myDb_1.executeQuery(query_string_2, "rsl_existe_3");
+                    while (myDb_1.next("rsl_existe_3")) {
+                        String id_usuario = myDb_1.getString("idusuario", "rsl_existe_3") + "";
+                        String nombre_usuario = myDb_1.getString("nombre", "rsl_existe_3") + "";
+                        String correo_usuario = myDb_1.getString("correo", "rsl_existe_3") + "";
+                        String password_usuario = myDb_1.getString("password", "rsl_existe_3") + "";
+                        String estado_usuario = myDb_1.getString("estado", "rsl_existe_3") + "";
+                          Object[] persona = new Object[]{id_usuario, nombre_usuario, correo_usuario, password_usuario,estado_usuario};
+                        usuario.add(persona);
+                    }
+
+                    for (Object[] element : usuario) {
+                        modeloLista.addRow(element);
+                    }
+
+                    this.jTable1.setModel(modeloLista);
+                }
+            } catch (Exception e) {
+                System.out.println("SERVER : Ocurrió un error al traer la información de usuarios.");
+                JOptionPane.showMessageDialog(null, "Ocurrió un error al traer la información de usuarios.", "Error", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                myDb_1.close();
+            }
+        } catch (Exception e) {
+
+            System.out.println("SERVER : Ocurrió un error al traer la información de usuarios.");
+            JOptionPane.showMessageDialog(null, "Ocurrió un error al traer la información de usuarios.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+    }
+
     /**
      * Creates new form Usuarios
      */
     public Usuarios() {
         initComponents();
+        llenarTabla();
     }
 
     /**
@@ -33,28 +95,33 @@ public class Usuarios extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {},
+                {},
+                {},
+                {}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
         jScrollPane1.setViewportView(jTable1);
 
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 77, 720, 450));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 77, 760, 570));
 
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/new.png"))); // NOI18N
-        getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 250, -1, -1));
+        getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(870, 90, -1, -1));
 
         jButton1.setBackground(javax.swing.UIManager.getDefaults().getColor("textHighlight"));
         jButton1.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
@@ -64,7 +131,7 @@ public class Usuarios extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(770, 380, 170, 30));
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(850, 230, 170, 30));
 
         jLabel2.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
         jLabel2.setForeground(java.awt.Color.white);
@@ -78,10 +145,36 @@ public class Usuarios extends javax.swing.JFrame {
                 jButton2ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(890, 10, 60, 50));
+        getContentPane().add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1020, 20, 60, 50));
+
+        jButton3.setBackground(new java.awt.Color(255, 102, 0));
+        jButton3.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
+        jButton3.setForeground(new java.awt.Color(255, 255, 255));
+        jButton3.setText("ACTUALIZAR");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+        getContentPane().add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 500, 120, 50));
+
+        jButton4.setBackground(new java.awt.Color(204, 0, 51));
+        jButton4.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
+        jButton4.setText("ELIMINAR");
+        jButton4.setToolTipText("");
+        getContentPane().add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(950, 500, 140, 50));
+
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/background.png"))); // NOI18N
+        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(690, 420, 300, 230));
+
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/background.png"))); // NOI18N
+        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 310, 950, 350));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/background.png"))); // NOI18N
-        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
+        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 40, 950, 540));
+
+        jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/background.png"))); // NOI18N
+        getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(690, -20, 300, 500));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -97,8 +190,13 @@ public class Usuarios extends javax.swing.JFrame {
         // TODO add your handling code here:
         Interfaz menu = new Interfaz();
         menu.setVisible(true);
+        menu.setResizable(false);
         this.setVisible(false);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -138,9 +236,14 @@ public class Usuarios extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
