@@ -2,3 +2,9 @@
 *.class
 servidorcorreo.db
 ServidorYimail/servidorcorreo.db
+/pj2-Grupo5AN/MailServer/build/
+/pj2-Grupo5AN/MailServer/dist/
+/pj2-Grupo5AN/MailServer/nbproject/private/
+/pj2-Grupo5AN/MailClient/build/
+/pj2-Grupo5AN/MailClient/dist/
+/pj2-Grupo5AN/MailClient/nbproject/private/
