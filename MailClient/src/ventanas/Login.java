@@ -7,6 +7,7 @@ package ventanas;
 
 import java.io.*;
 import java.net.*;
+import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -20,6 +21,7 @@ public class Login extends javax.swing.JFrame {
     public DataOutputStream flujoDatosSalida;
     public String userId;
     public Socket conexion;
+    public String ipAddress;
 
     /**
      * Persiste una conexion previamente establecida y sus metodos para transmitir y recibir mensajes
@@ -36,6 +38,10 @@ public class Login extends javax.swing.JFrame {
         this.conexion = conexion;
     }
 
+    public void setIp(String ipAdd) {
+        ipAddress = ipAdd;
+    }
+    
     /**
      * Creates new form Login
      */
@@ -172,6 +178,14 @@ public class Login extends javax.swing.JFrame {
             String leo;
 
             try {
+                //Timer timer = new Timer();
+                int PUERTO = 1400;
+                Socket conexion = null;
+                //Realizamos nueva conexion a la ip y puerto especificados
+                conexion = new Socket(ipAddress,PUERTO);
+                DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
+                DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
+                
                 String aux = jTextField1.getText();
                 String[] parts = aux.split("@");
                 String username = parts[0];
@@ -191,27 +205,19 @@ public class Login extends javax.swing.JFrame {
                             break;
                         case "SERVER : LOGIN ERROR 102":
                             JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                            conexion.close();
                             break;
                         case "SERVER : LOGIN ERROR 101":
                             JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                            conexion.close();
                             break;
                         default:
                             JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                            conexion.close();
                             break;
                     }
                 } else {
                     JOptionPane.showMessageDialog(null, "El usuario ingresado no existe en el servidor.", "Error", JOptionPane.ERROR_MESSAGE);
-                    conexion.close();
                 }
             } catch (Exception e) {
-                try {
-                    conexion.close();
-                } catch (IOException ex) {
-                    System.out.println("No se puedo crear la conexion");
-                }
+               
                 System.out.println("No se puedo crear la conexion");
             }
         }

@@ -27,77 +27,14 @@ public class MailClient {
     static Login login;
     static Socket conexion = null;
 
-
-    /**
-     * Metodo para ejecutar la tarea programada de comando NOOP entre cliente y servidor.
-     */
-    static TimerTask timerTask = new TimerTask() {
-        public void run() {
-            
-            String reqStr = "NOOP";
-            
-            try {
-                flujoDatosSalida.writeUTF(reqStr);
-                
-                String response = flujoDatosEntrada.readUTF();
-             
-                switch(response) {
-                    case "SERVER : OK NOOP":
-                        break;
-                    default:
-                        JOptionPane.showMessageDialog(null, "Ha ocurrido un error con la conexion al servidor.", "Error", JOptionPane.ERROR_MESSAGE);
-                        login.disableLoginButton();
-                        conexion.close();
-                }
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(null, "Ha ocurrido un error con la conexion al servidor.", "Error", JOptionPane.ERROR_MESSAGE);
-                login.disableLoginButton();
-                try {
-                    conexion.close();
-                } catch (IOException ex1) {
-                    System.out.println("Error al cerrar conexion.");
-                }
-                System.out.println("Error al enviar datos");
-            }
-        }
-    };
-
     /**
      * Main
      *
      * @param String[] args
      */
     public static void main(String[] args) {
-        Timer timer = new Timer();
-        String leo;
-        String ip = "192.168.1.6";
-        int PUERTO = 1400;
-         
-        try{
-            //Realizamos nueva conexion a la ip y puerto especificados
-            conexion = new Socket(ip,PUERTO);
-            flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
-            flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
-
-
-            //Si la conexion fue realizada exitosamente mostramos ventana login y programamos comando NOOP.
-            login = new Login();
-            login.setInfo(flujoDatosEntrada, flujoDatosSalida, conexion);
-            login.setVisible(true);
-            
-            timer.scheduleAtFixedRate(timerTask, 0, 15000);
-            
-        } catch (Exception e){
-            System.out.println("No se pudo crear la conexion.");
-            JOptionPane.showMessageDialog(null, "Ha ocurrido un error al conectar al servidor.", "Error", JOptionPane.ERROR_MESSAGE);
-            try {
-                conexion.close();
-            } catch (IOException ex) {
-                System.out.println("Error al cerrar la conexion");
-            }
-        }
-        
-      
-       
+  
+        Ip ipSelect = new Ip();
+        ipSelect.setVisible(true);
     }
 }
