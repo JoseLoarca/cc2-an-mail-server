@@ -4,16 +4,44 @@
  * and open the template in the editor.
  */
 package ventanas;
+
 import java.io.*;
 import java.net.*;
+import java.util.Timer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
- *
  * @author Harim
  */
 public class Login extends javax.swing.JFrame {
 
+    public DataInputStream flujoDatosEntrada;
+    public DataOutputStream flujoDatosSalida;
+    public String userId;
+    public Socket conexion;
+    public String ipAddress;
+
+    /**
+     * Persiste una conexion previamente establecida y sus metodos para transmitir y recibir mensajes
+     *
+     * @param DataInputStream input
+     * @param DataOutputStream output
+     * @param Socket conexion
+     *
+     * @return void
+     */
+    public void setInfo(DataInputStream input, DataOutputStream output, Socket conexion) {
+        flujoDatosEntrada = input;
+        flujoDatosSalida = output;
+        this.conexion = conexion;
+    }
+
+    public void setIp(String ipAdd) {
+        ipAddress = ipAdd;
+    }
+    
     /**
      * Creates new form Login
      */
@@ -45,7 +73,6 @@ public class Login extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
         jLabelFondo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -115,14 +142,6 @@ public class Login extends javax.swing.JFrame {
         jLabel1.setToolTipText("");
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(620, 230, 20, 30));
 
-        jButton1.setText("jButton1");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 60, -1, -1));
-
         jLabelFondo.setBackground(java.awt.SystemColor.textHighlight);
         jLabelFondo.setForeground(java.awt.Color.white);
         jLabelFondo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/comettt.png"))); // NOI18N
@@ -131,67 +150,128 @@ public class Login extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Valida que los campos de login no esten vacios antes de ser enviados
+     *
+     * @return boolean Si los campos son validos devuelve true, de lo contrario false
+     */
+    public boolean validFields() {
+        if (jTextField1.getText().isEmpty() || jPasswordField1.getText().isEmpty() ||
+                jTextField1.getText().trim().equals("") || jPasswordField1.getText().trim().equals("")) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Envia y procesa el comando de login
+     *
+     * @param evt
+     */
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
-       // BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
-                               String user = jTextField1.getText().toLowerCase();
-                        String password = jPasswordField1.getText().toLowerCase();
-       if(jTextField1.getText().toLowerCase() == null && jPasswordField1.getText().toLowerCase()== null ){
-           JOptionPane.showMessageDialog(null, "No ingreso todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
-       }else{
-       String leo;
-	 String ip = "192.168.1.6";
-	 Socket conexion = null;
-	 int PUERTO = 1400;
+        String user = jTextField1.getText().toLowerCase();
+        String password = jPasswordField1.getText().toLowerCase();
+        if (!validFields()) {
+            JOptionPane.showMessageDialog(null, "Por favor complete ambos campos.", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            String leo;
 
-		try{
-			conexion = new Socket(ip,PUERTO);
-			DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
-			DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
-			
-                        System.out.println("ingrese informacion a enviar al servidor");
-                        leo = ("LOGIN" + " " + user +" "+ password);
-                        System.out.println("lo que se metio en leo: "+ leo);
-                        flujoDatosSalida.writeUTF(leo); 
-                        String response = flujoDatosEntrada.readUTF();
-                        
-                        System.out.println("Eco: " + response);
-                        
-                        switch(response) {
-                            case "SERVER : OK LOGIN":
-                                    Interfaz menu = new Interfaz();
-                                    menu.setUsername(user);
-                        
-                                    menu.setVisible(true);
-                                    this.setVisible(false);
-                                break;
-                            case "SERVER : LOGIN ERROR 102":
-                                JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                                break;
-                            case "SERVER : LOGIN ERROR 101":
-                                JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                                break;
-                            default:
-                                JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
-                                System.out.println("");
-                                break;
-                             
-                        }
-                        
+            try {
+                //Timer timer = new Timer();
+                int PUERTO = 1400;
+                Socket conexion = null;
+                //Realizamos nueva conexion a la ip y puerto especificados
+                conexion = new Socket(ipAddress,PUERTO);
+                DataInputStream flujoDatosEntrada = new DataInputStream(conexion.getInputStream());
+                DataOutputStream flujoDatosSalida = new DataOutputStream(conexion.getOutputStream());//Creamos objeto para enviar
+                
+                String aux = jTextField1.getText();
+                String[] parts = aux.split("@");
+                String username = parts[0];
+                String server = parts[1];
+                if (verifyUserServer(flujoDatosEntrada, flujoDatosSalida, username, server)) {
+                    leo = ("LOGIN" + " " + parts[0] + " " + password);
+                    flujoDatosSalida.writeUTF(leo);
+                    String response = flujoDatosEntrada.readUTF();
 
-		}catch(Exception e){
-			System.out.println("No se puedo crear la conexion");
-		}
-       }
-       
-	
-
+                    switch (response) {
+                        case "SERVER : OK LOGIN":
+                            Interfaz menu = new Interfaz();
+                            menu.setUsername(username);
+                            menu.setUserId(username, password, flujoDatosEntrada, flujoDatosSalida, conexion);
+                            menu.setVisible(true);
+                            this.setVisible(false);
+                            break;
+                        case "SERVER : LOGIN ERROR 102":
+                            JOptionPane.showMessageDialog(null, "Contraseña incorrecta, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                            break;
+                        case "SERVER : LOGIN ERROR 101":
+                            JOptionPane.showMessageDialog(null, "Usuario desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                            break;
+                        default:
+                            JOptionPane.showMessageDialog(null, "Ha ocurrido un error desconocido, intente nuevamente.", "Error", JOptionPane.ERROR_MESSAGE);
+                            break;
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "El usuario ingresado no existe en el servidor.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception e) {
+               
+                System.out.println("No se puedo crear la conexion");
+            }
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        JOptionPane.showMessageDialog(null, "My Goodness, this is so concise");
-    }//GEN-LAST:event_jButton1ActionPerformed
+    /**
+     * Verifica que el usuario que intenta loguearse pertenezca al servidor
+     *
+     * @param flujoDatosEntrada
+     * @param flujoDatosSalida
+     * @param user
+     * @param server
+     * @return
+     */
+    public boolean verifyUserServer(DataInputStream flujoDatosEntrada, DataOutputStream flujoDatosSalida, String user, String server) {
+        boolean verify = false;
+
+        String reqStr = ("VERIFYUSRSERVER " + user + " " + server);
+
+        System.out.println("Enviar: " + reqStr);
+
+        try {
+            flujoDatosSalida.writeUTF(reqStr);
+
+            String response = flujoDatosEntrada.readUTF();
+
+            System.out.println("Respuesta: " + response);
+
+            switch (response) {
+                case "SERVER : OK SERVER VERIFICATE":
+                    verify = true;
+                    break;
+                default:
+                    break;
+            }
+
+            return verify;
+
+        } catch (IOException ex) {
+            System.out.println("Ocurrio un error al enviar los datos: " + ex);
+        }
+
+        return verify;
+    }
+
+    /**
+     * Deshabilita el boton de login
+     *
+     * @return void
+     *
+     */
+    public void disableLoginButton() {
+        jButton2.setEnabled(false);
+    }
 
     /**
      * @param args the command line arguments
@@ -200,7 +280,7 @@ public class Login extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -230,7 +310,6 @@ public class Login extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
