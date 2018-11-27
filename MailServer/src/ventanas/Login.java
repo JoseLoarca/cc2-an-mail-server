@@ -137,7 +137,7 @@ public class Login extends javax.swing.JFrame {
         } else {
             /*se inicia la instancia del servidor para empezar a escuchar al DNS y a otros servidores*/
             DNSes dns = new DNSes();
-            dns.ip_configure(resultado);
+            dns.asigIP(resultado);
             dns.start();
             InicioCliente cliente = new InicioCliente();
             cliente.start();

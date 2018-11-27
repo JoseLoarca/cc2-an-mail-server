@@ -10,7 +10,7 @@ public class InicioCliente extends Thread {
     	try{
             cs1 = new ServerSocket(puerto1);
             sc1 = new Socket();
-            System.out.println("Esperando conexion");
+            System.out.println("Esperando conexion de Cliente.");
             while(true){
 	            sc1 = cs1.accept();
 	            ServidorCliente cliente = new ServidorCliente(sc1);
